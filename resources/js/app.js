@@ -465,7 +465,7 @@ class App {
     // Title Text Animation
     initTitleTextAnimation() {
         const originalTitle = document.title;
-        const fullTitle = originalTitle + " — Content Management System — ";
+        const fullTitle = originalTitle + " — Kencana Store — ";
         let scrollIndex = 0;
         let animationId;
 

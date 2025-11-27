@@ -2,7 +2,7 @@
     <div class="container">
         {{-- Brand/Logo --}}
         <a class="navbar-brand" href="{{ route('landing.index') }}">
-            <img src="{{ asset('images/logo-sm.png') }}" alt="logo-mtf">
+            <img src="{{ asset('images/logo.png') }}" alt="logo-mtf">
         </a>
 
         {{-- Mobile Toggle Button - TANPA data-bs attributes --}}

@@ -3,24 +3,26 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // User::truncate();
+        // Create super admin user
+        $superAdmin = User::firstOrCreate(
+            ['email' => 'superadmin@mail.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('password'),
+            ]
+        );
 
-        $superAdmin = User::create([
-            'name' => 'Arsyad Arthan N',
-            'email' => 'superadmin@mail.com',
-            'password' => password_hash('password', PASSWORD_DEFAULT),
-        ]);
+        $role = Role::firstOrCreate(['name' => 'superadmin']);
+        $superAdmin->syncRoles([$role->name]);
 
-        $superAdmin->assignRole('super-admin');
+        \Spatie\Permission\PermissionRegistrar::forgetCachedPermissions();
     }
 }

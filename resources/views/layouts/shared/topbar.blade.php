@@ -6,19 +6,19 @@
             <div class="logo-topbar ms-3">
                 <a href="/" class="logo-dark">
                     <span class="d-flex align-items-center gap-1">
-                        <img src="/images/logo-sm.png" height="35" alt="Logo">
+                        <img src="/images/logo.png" height="35" alt="Logo">
                     </span>
                 </a>
                 <a href="/" class="logo-light">
                     <span class="d-flex align-items-center gap-1">
-                        <img src="/images/logo-sm.png" height="35" alt="Logo">
+                        <img src="/images/logo.png" height="35" alt="Logo">
                     </span>
                 </a>
             </div>
 
             <div class="d-lg-none d-flex mx-1">
                 <a href="/">
-                    <img src="/images/logo-sm.png" height="28" alt="Logo">
+                    <img src="/images/logo.png" height="28" alt="Logo">
                 </a>
             </div>
 
@@ -175,18 +175,11 @@
                             <span class="align-middle">Change Password</span>
                         </a>
 
-                        <!-- Support -->
-                        <a href="mailto:arsyadevelop@gmail.com?subject=CMS&body=Halo tim support,%0D%0A%0D%0ASaya mengalami masalah pada..."
-                           class="dropdown-item">
-                            <i class="ti ti-headset me-2 fs-17 align-middle"></i>
-                            <span class="align-middle">Support Center</span>
-                        </a>
-
 
                         <!-- Divider -->
                         <div class="dropdown-divider"></div>
 
-                        <a href="#" class="dropdown-item text-danger fw-semibold"
+                        <a href="#" class="dr   opdown-item text-danger fw-semibold"
                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="ti ti-logout-2 me-2 fs-17 align-middle"></i>
                             <span class="align-middle">Log Out</span>
