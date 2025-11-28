@@ -8,6 +8,10 @@
 
 import $ from 'jquery';
 import 'bootstrap/js/dist/tab'; // ensure bootstrap Tab API available
+import { initQuillEditor, getQuillContent } from '../../utils/quill-helper';
+
+let editorShortDesc;
+let editorDesc;
 
 function toastError(msg) {
     if (window.toast && typeof window.toast.error === 'function') return window.toast.error(msg);
@@ -58,6 +62,35 @@ async function initSelect2(selector = '#categoriesSelect') {
 }
 
 $(function() {
+
+    initQuillEditor('#short_description', {
+        height: '300px',
+        placeholder: 'Tulis konten Anda di sini...'
+    })
+        .then(editorInstance => {
+            editorShortDesc = editorInstance;
+        })
+        .catch(error => {
+            console.error('Failed to initialize Quill:', error);
+            if (window.toast) {
+                window.toast.error('Gagal memuat editor');
+            }
+        });
+
+    initQuillEditor('#description', {
+        height: '300px',
+        placeholder: 'Tulis konten Anda di sini...'
+    })
+        .then(editorInstance => {
+            editorDesc = editorInstance;
+        })
+        .catch(error => {
+            console.error('Failed to initialize Quill:', error);
+            if (window.toast) {
+                window.toast.error('Gagal memuat editor');
+            }
+        });
+
     // Ensure nav tab buttons are not type=submit (defensive)
     $('.nav-tabs').find('button').attr('type', 'button');
 
@@ -211,6 +244,14 @@ $(function() {
             e.preventDefault();
             toastError('Atribut tidak valid JSON');
             return false;
+        }
+
+        // Ensure Quill content is saved to textarea
+        if (editorShortDesc) {
+            $('#short_description').val(getQuillContent(editorShortDesc));
+        }
+        if (editorDesc) {
+            $('#description').val(getQuillContent(editorDesc));
         }
 
         // allow normal submit to continue
