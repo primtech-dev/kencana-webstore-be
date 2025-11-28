@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class ProductVariant extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'product_id','sku','variant_name','price_cents','retail_price_cents','cost_cents',
+        'length','width','height','is_active','is_sellable'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_sellable' => 'boolean',
+    ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class, 'variant_id');
+    }
+}

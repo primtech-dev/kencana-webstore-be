@@ -14,16 +14,19 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasRoles, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name','email','password','phone','address','branch_id','is_superadmin','is_active','meta'
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(\App\Models\Branch::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return (bool)$this->is_superadmin || $this->hasRole('superadmin');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -40,16 +43,19 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'is_superadmin' => 'boolean',
+        'is_active' => 'boolean',
+        'meta' => 'array',
+        'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+    ];
 
-    public function articlePosts(): HasMany
+    // helper check: apakah user boleh akses resource cabang $branchId
+    public function canAccessBranch(?int $branchId): bool
     {
-        return $this->hasMany(ArticlePost::class, 'author_id', 'id');
+        if ($this->isSuperadmin()) return true;
+        if (is_null($branchId)) return false;
+        return $this->branch_id === $branchId;
     }
 }

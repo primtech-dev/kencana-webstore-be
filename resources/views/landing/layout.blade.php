@@ -14,7 +14,7 @@
           "@@type": "FinancialService",
           "name": "Mandiri Tunas Finance - Jember",
           "url": "{{ url('/') }}",
-          "image": "{{ asset('images/logo-sm.png') }}",
+          "image": "{{ asset('images/logo.png') }}",
           "description": "Mandiri Tunas Finance (MTF) adalah perusahaan pembiayaan terkemuka di Indonesia...",
           "telephone": "+62 8578 4242 462",
 
