@@ -61,12 +61,12 @@
 
                         <div class="mb-3">
                             <strong>Deskripsi singkat</strong>
-                            <p class="small text-muted">{{ $product->short_description ?? '-' }}</p>
+                            <div class="small text-muted">{!! $product->short_description ?? '-' !!}</div>
                         </div>
 
                         <div class="mb-3">
                             <strong>Deskripsi lengkap</strong>
-                            <div class="small text-muted">{!! nl2br(e($product->description ?? '-')) !!}</div>
+                            <div class="small text-muted">{!! $product->description ?? '-' !!}</div>
                         </div>
 
                         <div class="d-flex gap-2">
