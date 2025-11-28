@@ -32,16 +32,9 @@
             <li class="side-nav-title mt-2">Produk & Katalog</li>
 
             <li class="side-nav-item">
-                <a href="" class="side-nav-link">
+                <a href="{{route('products.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="package"></i></span>
                     <span class="menu-text">Produk</span>
-                </a>
-            </li>
-
-            <li class="side-nav-item">
-                <a href="" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="layers"></i></span>
-                    <span class="menu-text">Varian Produk</span>
                 </a>
             </li>
 
@@ -49,13 +42,6 @@
                 <a href="{{route("categories.index")}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="tag"></i></span>
                     <span class="menu-text">Kategori</span>
-                </a>
-            </li>
-
-            <li class="side-nav-item">
-                <a href="" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="image"></i></span>
-                    <span class="menu-text">Gambar Produk</span>
                 </a>
             </li>
 
@@ -190,21 +176,21 @@
             <li class="side-nav-title mt-2">Pengguna & Akses</li>
 
             <li class="side-nav-item">
-                <a href="" class="side-nav-link">
+                <a href="{{route('users.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="user"></i></span>
                     <span class="menu-text">Admin / Pengguna</span>
                 </a>
             </li>
 
             <li class="side-nav-item">
-                <a href="" class="side-nav-link">
+                <a href="{{route('roles.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="shield-check"></i></span>
                     <span class="menu-text">Role</span>
                 </a>
             </li>
 
             <li class="side-nav-item">
-                <a href="" class="side-nav-link">
+                <a href="{{route('permissions.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="key"></i></span>
                     <span class="menu-text">Permission</span>
                 </a>

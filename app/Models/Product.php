@@ -9,19 +9,27 @@ class Product extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'products';
-
     protected $fillable = [
-        'name',
-        'slug',
-        'image_path',
-        'alt_text',
-        'content',
-        'terms_and_condition',
-        'is_active',
+        'sku','name','short_description','description','attributes','weight_gram','is_active'
     ];
 
     protected $casts = [
+        'attributes' => 'array',
         'is_active' => 'boolean',
     ];
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'product_categories')->withTimestamps()->using(\App\Models\ProductCategory::class);
+    }
 }

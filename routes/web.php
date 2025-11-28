@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
-
+use App\Http\Controllers\Settings\RoleController;
+use App\Http\Controllers\Settings\PermissionController;
+use App\Http\Controllers\Users\UserController;
+use App\Http\Controllers\ProductController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +64,54 @@ Route::middleware(['auth'])->name('categories.')->prefix('categories')->group(fu
     Route::put('/{id}', [CategoryController::class, 'update'])->name('update')->middleware('permission:categories.update');
     Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy')->middleware('permission:categories.delete');
     Route::get('/{id}', [CategoryController::class, 'show'])->name('show')->middleware('permission:categories.view');
+});
+
+Route::middleware(['auth'])->name('roles.')->prefix('roles')->group(function () {
+    Route::get('/', [RoleController::class, 'index'])->name('index')->middleware('permission:roles.view');
+    Route::get('/create', [RoleController::class, 'create'])->name('create')->middleware('permission:roles.create');
+    Route::post('/', [RoleController::class, 'store'])->name('store')->middleware('permission:roles.create');
+    Route::get('/{id}/edit', [RoleController::class, 'edit'])->name('edit')->middleware('permission:roles.update');
+    Route::put('/{id}', [RoleController::class, 'update'])->name('update')->middleware('permission:roles.update');
+    Route::delete('/{id}', [RoleController::class, 'destroy'])->name('destroy')->middleware('permission:roles.delete');
+    Route::get('/{id}', [RoleController::class, 'show'])->name('show')->middleware('permission:roles.view');
+});
+
+Route::middleware(['auth'])->name('permissions.')->prefix('permissions')->group(function () {
+    Route::get('/', [PermissionController::class, 'index'])->name('index')->middleware('permission:permissions.view');
+    Route::get('/create', [PermissionController::class, 'create'])->name('create')->middleware('permission:permissions.create');
+    Route::post('/', [PermissionController::class, 'store'])->name('store')->middleware('permission:permissions.create');
+    Route::get('/{id}/edit', [PermissionController::class, 'edit'])->name('edit')->middleware('permission:permissions.update');
+    Route::put('/{id}', [PermissionController::class, 'update'])->name('update')->middleware('permission:permissions.update');
+    Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('destroy')->middleware('permission:permissions.delete');
+    Route::get('/{id}', [PermissionController::class, 'show'])->name('show')->middleware('permission:permissions.view');
+});
+
+Route::middleware(['auth'])->name('users.')->prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index'])->name('index')->middleware('permission:users.view');
+    Route::get('/create', [UserController::class, 'create'])->name('create')->middleware('permission:users.create');
+    Route::post('/', [UserController::class, 'store'])->name('store')->middleware('permission:users.create');
+    Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit')->middleware('permission:users.update');
+    Route::put('/{id}', [UserController::class, 'update'])->name('update')->middleware('permission:users.update');
+    Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy')->middleware('permission:users.delete');
+    Route::get('/{id}', [UserController::class, 'show'])->name('show')->middleware('permission:users.view');
+});
+
+Route::middleware(['auth'])->name('products.')->prefix('products')->group(function () {
+    Route::get('/', [ProductController::class, 'index'])->name('index')->middleware('permission:products.view');
+    Route::get('/create', [ProductController::class, 'create'])->name('create')->middleware('permission:products.create');
+    Route::post('/', [ProductController::class, 'store'])->name('store')->middleware('permission:products.create');
+    Route::get('/{id}/edit', [ProductController::class, 'edit'])->name('edit')->middleware('permission:products.update');
+    Route::put('/{id}', [ProductController::class, 'update'])->name('update')->middleware('permission:products.update');
+    Route::delete('/{id}', [ProductController::class, 'destroy'])->name('destroy')->middleware('permission:products.delete');
+    Route::get('/{id}', [ProductController::class, 'show'])->name('show')->middleware('permission:products.view');
+
+    // extra ajax routes
+    Route::post('/{id}/images/upload', [ProductController::class, 'uploadImage'])->name('images.upload')->middleware('permission:products.update');
+    Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])->name('images.destroy')->middleware('permission:products.update');
+
+    Route::post('/{id}/images/reorder', [ProductController::class, 'reorderImages'])->name('products.images.reorder');
+    Route::post('/images/{id}/set-main', [ProductController::class, 'setMainImage'])->name('products.images.set_main');
+    Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])->name('products.images.destroy'); // if not present
 });
 
 /*

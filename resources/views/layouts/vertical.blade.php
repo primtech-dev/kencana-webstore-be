@@ -13,6 +13,7 @@
     @yield('styles')
 
     @include('layouts.shared/head-css')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
