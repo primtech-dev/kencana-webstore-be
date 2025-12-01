@@ -6,6 +6,7 @@ use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\PermissionController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockReceiptController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -112,6 +113,19 @@ Route::middleware(['auth'])->name('products.')->prefix('products')->group(functi
     Route::post('/{id}/images/reorder', [ProductController::class, 'reorderImages'])->name('products.images.reorder');
     Route::post('/images/{id}/set-main', [ProductController::class, 'setMainImage'])->name('products.images.set_main');
     Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])->name('products.images.destroy'); // if not present
+});
+
+Route::middleware(['auth'])->name('stock_receipts.')->prefix('stock-receipts')->group(function () {
+    // Ajax helper to lookup variants
+    Route::get('/variant-search', [StockReceiptController::class, 'variantSearch'])->name('variant.search')->middleware('permission:stock_receipts.create');
+
+    Route::get('/', [StockReceiptController::class, 'index'])->name('index')->middleware('permission:stock_receipts.view');
+    Route::get('/create', [StockReceiptController::class, 'create'])->name('create')->middleware('permission:stock_receipts.create');
+    Route::post('/', [StockReceiptController::class, 'store'])->name('store')->middleware('permission:stock_receipts.create');
+    Route::get('/{id}', [StockReceiptController::class, 'show'])->name('show')->middleware('permission:stock_receipts.view');
+    Route::get('/{id}/edit', [StockReceiptController::class, 'edit'])->name('edit')->middleware('permission:stock_receipts.update');
+    Route::put('/{id}', [StockReceiptController::class, 'update'])->name('update')->middleware('permission:stock_receipts.update');
+    Route::delete('/{id}', [StockReceiptController::class, 'destroy'])->name('destroy')->middleware('permission:stock_receipts.delete');
 });
 
 /*

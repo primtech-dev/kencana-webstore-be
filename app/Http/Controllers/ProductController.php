@@ -86,16 +86,14 @@ class ProductController extends Controller
             if (!empty($validated['variants']) && is_array($validated['variants'])) {
                 foreach ($validated['variants'] as $formIndex => $v) {
                     // skip if fully empty
-                    $hasMeaning = (!empty($v['variant_name']) || !empty($v['sku']) || !empty($v['price_cents']));
+                    $hasMeaning = (!empty($v['variant_name']) || !empty($v['sku']) || !empty($v['price']));
                     if (!$hasMeaning) continue;
 
                     $variant = ProductVariant::create([
                         'product_id' => $product->id,
                         'sku' => $v['sku'] ?? null,
                         'variant_name' => $v['variant_name'] ?? '',
-                        'price_cents' => isset($v['price_cents']) ? (int)$v['price_cents'] : null,
-                        'retail_price_cents' => isset($v['retail_price_cents']) ? (int)$v['retail_price_cents'] : null,
-                        'cost_cents' => isset($v['cost_cents']) ? (int)$v['cost_cents'] : null,
+                        'price' => isset($v['price']) ? (int)$v['price'] : null,
                         'length' => $v['length'] ?? null,
                         'width' => $v['width'] ?? null,
                         'height' => $v['height'] ?? null,
@@ -270,9 +268,7 @@ class ProductController extends Controller
                         $variant->update([
                             'sku' => $v['sku'] ?? $variant->sku,
                             'variant_name' => $v['variant_name'] ?? $variant->variant_name,
-                            'price_cents' => isset($v['price_cents']) ? (int)$v['price_cents'] : $variant->price_cents,
-                            'retail_price_cents' => isset($v['retail_price_cents']) ? (int)$v['retail_price_cents'] : $variant->retail_price_cents,
-                            'cost_cents' => isset($v['cost_cents']) ? (int)$v['cost_cents'] : $variant->cost_cents,
+                            'price' => isset($v['price']) ? (int)$v['price'] : $variant->price,
                             'length' => $v['length'] ?? $variant->length,
                             'width' => $v['width'] ?? $variant->width,
                             'height' => $v['height'] ?? $variant->height,
@@ -284,15 +280,13 @@ class ProductController extends Controller
                     }
                 } else {
                     // create new variant if meaningful
-                    $hasMeaning = (!empty($v['variant_name']) || !empty($v['sku']) || !empty($v['price_cents']));
+                    $hasMeaning = (!empty($v['variant_name']) || !empty($v['sku']) || !empty($v['price']));
                     if (!$hasMeaning) continue;
                     $variant = ProductVariant::create([
                         'product_id' => $product->id,
                         'sku' => $v['sku'] ?? null,
                         'variant_name' => $v['variant_name'] ?? '',
-                        'price_cents' => isset($v['price_cents']) ? (int)$v['price_cents'] : null,
-                        'retail_price_cents' => isset($v['retail_price_cents']) ? (int)$v['retail_price_cents'] : null,
-                        'cost_cents' => isset($v['cost_cents']) ? (int)$v['cost_cents'] : null,
+                        'price' => isset($v['price']) ? (int)$v['price'] : null,
                         'length' => $v['length'] ?? null,
                         'width' => $v['width'] ?? null,
                         'height' => $v['height'] ?? null,
@@ -462,9 +456,7 @@ class ProductController extends Controller
             'variants.*.id' => 'nullable|integer|exists:product_variants,id',
             'variants.*.variant_name' => 'sometimes|required|string|max:255',
             'variants.*.sku' => 'nullable|string|max:255',
-            'variants.*.price_cents' => 'nullable|integer|min:0',
-            'variants.*.retail_price_cents' => 'nullable|integer|min:0',
-            'variants.*.cost_cents' => 'nullable|integer|min:0',
+            'variants.*.price' => 'nullable|integer|min:0',
             'variants.*.length' => 'nullable|numeric',
             'variants.*.width' => 'nullable|numeric',
             'variants.*.height' => 'nullable|numeric',

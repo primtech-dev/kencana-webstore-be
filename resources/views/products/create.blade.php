@@ -13,9 +13,12 @@
 @endsection
 
 @section('content')
+    <script>
+        console.log('products-form.js loaded @', new Date().toISOString());
+    </script>
     @include('layouts.shared.page-title', [
         'title' => $product->exists ? 'Edit Produk' : 'Tambah Produk',
-        'subTitle' => 'Wizard: detail → kategori → varian → gambar → publish',
+        'subTitle' => 'Produk: detail → kategori → varian → gambar → publish',
         'breadcrumbs' => [
             ['name' => 'Produk', 'url' => route('products.index')],
             ['name' => $product->exists ? 'Edit' : 'Tambah']
@@ -31,7 +34,7 @@
 
         <div class="card">
             <div class="card-header justify-content-between d-flex align-items-center">
-                <h5 class="card-title mb-0">Basic Wizard</h5>
+                <h5 class="card-title mb-0">Create Product</h5>
                 <span class="badge badge-soft-success badge-label fs-xxs py-1">Product</span>
             </div>
 
