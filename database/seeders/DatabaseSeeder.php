@@ -22,7 +22,8 @@ class DatabaseSeeder extends Seeder
             PermissionProductSeeder::class,
             RolePermissionSyncSeeder::class,
             RolePermissionSeeder::class,
-            StockPermissionSeeder::class
+            StockPermissionSeeder::class,
+            CustomerPermissionSeeder::class
         ]);
     }
 }

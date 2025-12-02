@@ -120,15 +120,10 @@ class Customer extends Model
     //     return $this->hasMany(\App\Models\Order::class, 'customer_id', 'id');
     // }
 
-    /**
-     * (Optional) One-to-many: addresses of the customer
-     * Uncomment if `CustomerAddress` model & table exist.
-     */
-    // public function addresses(): HasMany
-    // {
-    //     return $this->hasMany(\App\Models\CustomerAddress::class, 'customer_id', 'id');
-    // }
-
+    public function addresses()
+    {
+        return $this->hasMany(Address::class, 'customer_id', 'id');
+    }
     /**
      * (Optional) One-to-one: profile record (if you keep extended profile separate)
      */

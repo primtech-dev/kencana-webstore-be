@@ -107,12 +107,12 @@
 {{--                </a>--}}
 {{--            </li>--}}
 
-{{--            <li class="side-nav-item">--}}
-{{--                <a href="" class="side-nav-link">--}}
-{{--                    <span class="menu-icon"><i data-lucide="users"></i></span>--}}
-{{--                    <span class="menu-text">Pelanggan</span>--}}
-{{--                </a>--}}
-{{--            </li>--}}
+            <li class="side-nav-item">
+                <a href="{{route('customers.index')}}" class="side-nav-link">
+                    <span class="menu-icon"><i data-lucide="users"></i></span>
+                    <span class="menu-text">Pelanggan</span>
+                </a>
+            </li>
 
 {{--            <li class="side-nav-item">--}}
 {{--                <a href="" class="side-nav-link">--}}
