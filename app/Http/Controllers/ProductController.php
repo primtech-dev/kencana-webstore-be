@@ -108,16 +108,23 @@ class ProductController extends Controller
 
             // 4) save global product images (product_images[])
             if ($request->hasFile('product_images')) {
+
+                $first = true;
+
                 foreach ($request->file('product_images') as $file) {
                     if (!$file || !$file->isValid()) continue;
+
                     $path = $file->store("products/{$product->id}", 'public');
+
                     ProductImage::create([
                         'product_id' => $product->id,
                         'variant_id' => null,
                         'url' => $path,
                         'position' => 0,
-                        'is_main' => false,
+                        'is_main' => $first ? true : false,
                     ]);
+
+                    $first = false; // setelah gambar pertama
                 }
             }
 
@@ -198,19 +205,25 @@ class ProductController extends Controller
                 }
 
                 // Save files
+                $firstImage = true;
+
                 foreach ($files as $file) {
                     if (!$file || !$file->isValid()) {
                         \Log::warning("store: invalid variant file for variant id {$variantId}");
                         continue;
                     }
+
                     $path = $file->store("products/{$product->id}/variants/{$variantId}", 'public');
+
                     ProductImage::create([
                         'product_id' => $product->id,
                         'variant_id' => $variantId,
                         'url' => $path,
                         'position' => 0,
-                        'is_main' => false,
+                        'is_main' => $firstImage ? true : false,
                     ]);
+
+                    $firstImage = false;
                 }
             }
 
@@ -300,7 +313,7 @@ class ProductController extends Controller
 
             // 4) delete variants removed in the form (optional or soft-delete)
             $toDelete = $product->variants()->whereNotIn('id', $incomingIds)->get();
-            foreach ($toDelete as $d) {
+        foreach ($toDelete as $d) {
                 $d->delete();
             }
 
