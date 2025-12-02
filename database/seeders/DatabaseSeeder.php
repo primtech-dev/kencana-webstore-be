@@ -17,6 +17,12 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
+            BranchesPermissionSeeder::class,
+            CategoryPermissionSeeder::class,
+            PermissionProductSeeder::class,
+            RolePermissionSyncSeeder::class,
+            RolePermissionSeeder::class,
+            StockPermissionSeeder::class
         ]);
     }
 }
