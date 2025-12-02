@@ -325,23 +325,23 @@
                 });
             });
 
-            // set main
-            document.querySelectorAll('.js-set-main').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    if (!confirm('Jadikan gambar ini utama?')) return;
-                    fetch(`/products/images/${id}/set-main`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Accept': 'application/json'
-                        }
-                    }).then(r => r.json()).then(resp => {
-                        if (resp && resp.success) location.reload();
-                        else alert('Gagal set utama.');
-                    }).catch(() => alert('Gagal set utama (server error)'));
-                });
-            });
+            // // set main
+            // document.querySelectorAll('.js-set-main').forEach(btn => {
+            //     btn.addEventListener('click', function() {
+            //         const id = this.dataset.id;
+            //         if (!confirm('Jadikan gambar ini utama?')) return;
+            //         fetch(`/products/images/${id}/set-main`, {
+            //             method: 'POST',
+            //             headers: {
+            //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            //                 'Accept': 'application/json'
+            //             }
+            //         }).then(r => r.json()).then(resp => {
+            //             if (resp && resp.success) location.reload();
+            //             else alert('Gagal set utama.');
+            //         }).catch(() => alert('Gagal set utama (server error)'));
+            //     });
+            // });
         });
     </script>
 @endsection
