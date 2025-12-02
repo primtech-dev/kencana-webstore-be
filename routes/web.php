@@ -7,6 +7,7 @@ use App\Http\Controllers\Settings\PermissionController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockReceiptController;
+use App\Http\Controllers\CustomerController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -126,6 +127,13 @@ Route::middleware(['auth'])->name('stock_receipts.')->prefix('stock-receipts')->
     Route::get('/{id}/edit', [StockReceiptController::class, 'edit'])->name('edit')->middleware('permission:stock_receipts.update');
     Route::put('/{id}', [StockReceiptController::class, 'update'])->name('update')->middleware('permission:stock_receipts.update');
     Route::delete('/{id}', [StockReceiptController::class, 'destroy'])->name('destroy')->middleware('permission:stock_receipts.delete');
+});
+
+Route::middleware(['auth'])->name('customers.')->prefix('customers')->group(function () {
+    Route::get('/', [CustomerController::class, 'index'])->name('index')->middleware('permission:customers.view');
+    Route::get('/{id}', [CustomerController::class, 'show'])->name('show')->middleware('permission:customers.view');
+    // toggle aktif / non-aktif via AJAX (PUT)
+    Route::put('/{id}/toggle-active', [CustomerController::class, 'toggleActive'])->name('toggleActive')->middleware('permission:customers.activate');
 });
 
 /*
