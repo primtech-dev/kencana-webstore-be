@@ -30,8 +30,9 @@
                         <tr>
                             <th width="5%">No</th>
                             <th>Nama</th>
+                            <th>Satuan</th>
                             <th>SKU</th>
-                            <th>Varian</th>
+                            <th>Jumlah Varian</th>
                             <th width="10%">Status</th>
                             <th width="12%">Created At</th>
                             <th width="12%" class="text-center">Aksi</th>

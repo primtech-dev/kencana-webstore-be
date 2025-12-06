@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductVariant;
 use App\Models\ProductImage;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -24,7 +25,9 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Product::select(['id','sku','name','is_active','created_at'])->withCount('variants');
+            $query = Product::select(['id','sku','name','is_active','created_at'])
+                ->withCount('variants')
+                ->with('unit'); // <-- pastikan unit dimuat
 
             $searchValue = $request->input('search.value');
             if (!empty($searchValue)) {
@@ -38,6 +41,13 @@ class ProductController extends Controller
                 ->addIndexColumn()
                 ->addColumn('is_active', function (Product $p) { return $p->is_active ? 'Aktif' : 'Non-aktif'; })
                 ->addColumn('variants_count', function ($p) { return $p->variants_count; })
+                ->addColumn('unit', function (Product $p) {
+                    if ($p->unit) {
+                        $code = $p->unit->code ? e($p->unit->code).' • ' : '';
+                        return $code . e($p->unit->name);
+                    }
+                    return '-';
+                })
                 ->addColumn('created_at', function ($p) { return $p->created_at ? $p->created_at->format('d M Y H:i') : '-'; })
                 ->addColumn('action', function (Product $p) {
                     return view('products._column_action', ['p'=>$p])->render();
@@ -52,7 +62,8 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::whereNull('parent_id')->orderBy('position')->get();
-        return view('products.create', ['product' => new Product(), 'categories' => $categories]);
+        $units = Unit::orderBy('name')->get();
+        return view('products.create', ['product' => new Product(), 'categories' => $categories, 'units' => $units]);
     }
 
     public function store(Request $request)
@@ -74,6 +85,7 @@ class ProductController extends Controller
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? true) : true,
+                'unit_id' => $validated['unit_id'] ?? null
             ]);
 
             // 2) categories pivot
@@ -99,6 +111,7 @@ class ProductController extends Controller
                         'height' => $v['height'] ?? null,
                         'is_active' => isset($v['is_active']) ? (bool)$v['is_active'] : true,
                         'is_sellable' => isset($v['is_sellable']) ? (bool)$v['is_sellable'] : true,
+                        'unit_id' => $validated['unit_id'] ?? null
                     ]);
 
                     // store mapping by original form index key (may be "0","1" or "new_0" etc.)
@@ -254,7 +267,8 @@ class ProductController extends Controller
     {
         $product = Product::with(['variants.images','images','categories'])->findOrFail($id);
         $categories = Category::orderBy('name')->get();
-        return view('products.create', compact('product','categories'));
+        $units = Unit::orderBy('name')->get();
+        return view('products.create', compact('product','categories','units'));
     }
 
     public function update(Request $request, int $id)
@@ -277,6 +291,7 @@ class ProductController extends Controller
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? false) : false,
+                'unit_id' => $validated['unit_id'] ?? null
             ]);
 
             // 2) sync categories
@@ -301,6 +316,7 @@ class ProductController extends Controller
                             'height' => $v['height'] ?? $variant->height,
                             'is_active' => isset($v['is_active']) ? (bool)$v['is_active'] : $variant->is_active,
                             'is_sellable' => isset($v['is_sellable']) ? (bool)$v['is_sellable'] : $variant->is_sellable,
+                            'unit_id' => $validated['unit_id'] ?? null
                         ]);
                         $incomingIds[] = $variant->id;
                         $variantIndexToId[(string)$formIndex] = $variant->id;
@@ -319,6 +335,7 @@ class ProductController extends Controller
                         'height' => $v['height'] ?? null,
                         'is_active' => isset($v['is_active']) ? (bool)$v['is_active'] : true,
                         'is_sellable' => isset($v['is_sellable']) ? (bool)$v['is_sellable'] : true,
+                        'unit_id' => $validated['unit_id'] ?? null
                     ]);
                     $incomingIds[] = $variant->id;
                     $variantIndexToId[(string)$formIndex] = $variant->id;
@@ -501,6 +518,7 @@ class ProductController extends Controller
             'is_active' => 'sometimes|boolean',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
+            'unit_id' => 'nullable|integer|exists:units,id',
             'variants' => 'nullable|array',
             'variants.*.id' => 'nullable|integer|exists:product_variants,id',
             'variants.*.variant_name' => 'sometimes|required|string|max:255',
@@ -535,7 +553,7 @@ class ProductController extends Controller
     protected function prepareValidated(Request $request): array
     {
         $validated = $request->only([
-            'sku','name','short_description','description','weight_gram','is_active','categories','variants'
+            'sku','name','short_description','description','weight_gram','is_active','categories','variants', 'unit_id'
         ]);
 
         // normalize attributes

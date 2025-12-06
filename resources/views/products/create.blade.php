@@ -117,10 +117,24 @@
 
                                     <div class="mb-3">
                                         <label class="form-label">SKU <small class="text-muted">(opsional)</small></label>
-                                        <input type="text" name="sku" class="form-control" value="{{ old('sku', $product->sku) }}">
+                                        <input type="text" name="sku" class="form-control select2" value="{{ old('sku', $product->sku) }}">
                                     </div>
 
-{{--                                    <div class="mb-3">--}}
+                                    <div class="mb-3">
+                                        <label class="form-label">Satuan / Unit <small class="text-muted">(opsional)</small></label>
+                                        <select name="unit_id" id="unitSelect" class="form-select">
+                                            <option value="">— Pilih Satuan —</option>
+                                            @foreach($units ?? [] as $u)
+                                                <option value="{{ $u->id }}" {{ (string) old('unit_id', $product->unit_id ?? '') === (string) $u->id ? 'selected' : '' }}>
+                                                    {{ $u->code ? $u->code . ' • ' : '' }}{{ $u->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <small class="text-muted">Pilih satuan produk (mis. Pcs, Kg). Varian akan mengikuti satuan produk.</small>
+                                    </div>
+
+
+                                    {{--                                    <div class="mb-3">--}}
 {{--                                        <label class="form-label">Deskripsi Singkat</label>--}}
 {{--                                        <textarea name="short_description" rows="3" class="form-control">{{ old('short_description', $product->short_description) }}</textarea>--}}
 {{--                                    </div>--}}
@@ -274,23 +288,63 @@
                         </div>
 
                         <!-- Step 5: Publish -->
+                        <!-- Step 5: Publish (Review yang rapi & dinamis) -->
                         <div class="tab-pane fade" id="tabPublish">
                             <div class="row">
                                 <div class="col-lg-8">
                                     <h6>Review & Publish</h6>
-                                    <p class="small text-muted">Periksa kembali data sebelum menyimpan.</p>
-                                    <!-- show brief preview -->
-                                    <div class="mb-3">
-                                        <strong>Nama:</strong> <div>{{ old('name', $product->name) ?? '-' }}</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <strong>Kategori:</strong>
-                                        <div>
-                                            @foreach($product->categories ?? [] as $c)
-                                                <span class="badge bg-light text-dark me-1">{{ $c->name }}</span>
-                                            @endforeach
+                                    <p class="small text-muted">Periksa kembali data sebelum menyimpan. Informasi di bawah ini berasal dari form — pastikan sudah benar.</p>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Informasi Utama</h5>
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-3">Nama</dt>
+                                                <dd class="col-sm-9" id="review_name">-</dd>
+
+                                                <dt class="col-sm-3">SKU</dt>
+                                                <dd class="col-sm-9" id="review_sku">-</dd>
+
+                                                <dt class="col-sm-3">Satuan</dt>
+                                                <dd class="col-sm-9" id="review_unit">-</dd>
+
+                                                <dt class="col-sm-3">Kategori</dt>
+                                                <dd class="col-sm-9" id="review_categories">-</dd>
+
+                                                <dt class="col-sm-3">Berat (gram)</dt>
+                                                <dd class="col-sm-9" id="review_weight">-</dd>
+                                            </dl>
                                         </div>
                                     </div>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Deskripsi Singkat</h5>
+                                            <div id="review_short_description" class="small text-muted">-</div>
+                                            <hr>
+                                            <h5 class="mb-2">Deskripsi Lengkap</h5>
+                                            <div id="review_description" class="small text-muted">-</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Varian</h5>
+                                            <div id="review_variants">
+                                                <p class="text-muted small mb-0">Belum ada varian.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Preview Gambar</h5>
+                                            <div id="review_images" class="d-flex flex-wrap gap-2">
+                                                <p class="text-muted small mb-0">Belum ada gambar.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
 
                                 <div class="col-lg-4 d-flex flex-column justify-content-between">
@@ -302,6 +356,7 @@
                                 </div>
                             </div>
                         </div>
+
 
                     </div> <!-- tab-content -->
                 </div> <!-- ins-wizard -->

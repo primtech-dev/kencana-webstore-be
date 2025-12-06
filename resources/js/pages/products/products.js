@@ -24,13 +24,14 @@ $(function() {
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable:false, searchable:false },
             { data: 'name', name: 'name' },
+            { data: 'unit', name: 'unit', orderable:false, searchable:false }, // <-- baru
             { data: 'sku', name: 'sku' },
             { data: 'variants_count', name: 'variants_count', orderable:false, searchable:false },
             { data: 'is_active', name: 'is_active', className: 'text-center', orderable:false, searchable:false },
             { data: 'created_at', name: 'created_at' },
             { data: 'action', name: 'action', orderable:false, searchable:false, className: 'text-center' }
         ],
-        order: [[5,'desc']],
+        order: [[1,'desc']],
         drawCallback: function() {
             try { if (window.lucide && typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e) {}
             initTooltips(document.querySelector('#products-table'));
