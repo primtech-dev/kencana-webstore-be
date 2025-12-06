@@ -45,6 +45,14 @@
                 </a>
             </li>
 
+
+            <li class="side-nav-item">
+                <a href="{{ route('units.index') }}" class="side-nav-link">
+                    <span class="menu-icon"><i data-lucide="ruler"></i></span>
+                    <span class="menu-text">Satuan / Unit</span>
+                </a>
+            </li>
+
             <!-- Persediaan & Gudang -->
             <li class="side-nav-title mt-2">Persediaan & Gudang</li>
 

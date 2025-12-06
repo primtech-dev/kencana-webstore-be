@@ -8,6 +8,7 @@ use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockReceiptController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\UnitController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -134,6 +135,16 @@ Route::middleware(['auth'])->name('customers.')->prefix('customers')->group(func
     Route::get('/{id}', [CustomerController::class, 'show'])->name('show')->middleware('permission:customers.view');
     // toggle aktif / non-aktif via AJAX (PUT)
     Route::put('/{id}/toggle-active', [CustomerController::class, 'toggleActive'])->name('toggleActive')->middleware('permission:customers.activate');
+});
+
+Route::middleware(['auth'])->name('units.')->prefix('units')->group(function () {
+    Route::get('/', [UnitController::class, 'index'])->name('index')->middleware('permission:units.view');
+    Route::get('/create', [UnitController::class, 'create'])->name('create')->middleware('permission:units.create');
+    Route::post('/', [UnitController::class, 'store'])->name('store')->middleware('permission:units.create');
+    Route::get('/{id}/edit', [UnitController::class, 'edit'])->name('edit')->middleware('permission:units.update');
+    Route::put('/{id}', [UnitController::class, 'update'])->name('update')->middleware('permission:units.update');
+    Route::delete('/{id}', [UnitController::class, 'destroy'])->name('destroy')->middleware('permission:units.delete');
+    Route::get('/{id}', [UnitController::class, 'show'])->name('show')->middleware('permission:units.view');
 });
 
 /*

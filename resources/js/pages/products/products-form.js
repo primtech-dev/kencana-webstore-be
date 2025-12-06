@@ -341,11 +341,186 @@ $(function() {
 
     setupWizardNavigation();
     initSelect2('#categoriesSelect');
+    initSelect2('#unitSelect');
     bindVariantControls();
     setupImagePreview('#productImagesInput', '#imagePreview');
     bindDeleteImageAjax();
     setupFormSubmitCleanup();
     showServerValidationErrors();
+
+    /* ===== Review renderer for Publish tab ===== */
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return $('<div>').text(String(str)).html();
+    }
+
+    /** format price IDR */
+    function fmtPriceIdr(n) {
+        if (n === null || n === '' || typeof n === 'undefined') return '-';
+        const v = parseInt(n, 10);
+        if (isNaN(v)) return '-';
+        return 'Rp ' + v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    /** Render variants table HTML from current variant rows */
+    function buildVariantsReviewHtml() {
+        const rows = $('#variantsContainer .variant-row');
+        if (!rows.length) return '<p class="text-muted small mb-0">Belum ada varian.</p>';
+
+        let html = '<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr>'
+            + '<th>#</th><th>Nama Varian</th><th>SKU</th><th>Harga</th><th>Dimensi (P×L×T cm)</th><th>Status</th></tr></thead><tbody>';
+
+        rows.each(function(i) {
+            const $r = $(this);
+            const vname = $r.find('input[name*="[variant_name]"]').val() || '-';
+            const vsku = $r.find('input[name*="[sku]"]').val() || '-';
+            const vprice = $r.find('input[name*="[price]"]').val();
+            const vlength = $r.find('input[name*="[length]"]').val() || '-';
+            const vwidth = $r.find('input[name*="[width]"]').val() || '-';
+            const vheight = $r.find('input[name*="[height]"]').val() || '-';
+            const isActive = $r.find('select[name*="[is_active]"]').val();
+            const isSellable = $r.find('select[name*="[is_sellable]"]').val();
+
+            html += '<tr>';
+            html += `<td>${i+1}</td>`;
+            html += `<td>${escapeHtml(vname)}</td>`;
+            html += `<td>${escapeHtml(vsku)}</td>`;
+            html += `<td>${escapeHtml(fmtPriceIdr(vprice))}</td>`;
+            html += `<td>${escapeHtml(vlength)} × ${escapeHtml(vwidth)} × ${escapeHtml(vheight)}</td>`;
+            html += `<td>${isActive == '1' ? 'Aktif' : 'Non-aktif'}${isSellable == '0' ? ' • Tidak Dijual' : ''}</td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        return html;
+    }
+
+    /** Render images preview from #imagePreview (local previews) OR product existing images (edit mode) */
+    function buildImagesReviewHtml() {
+        const $preview = $('#imagePreview');
+        const thumbs = [];
+
+        // 1) local preview images (img tags inside #imagePreview)
+        $preview.find('img').each(function() {
+            thumbs.push($(this).attr('src'));
+        });
+
+        // 2) if no local previews, fallback to server-rendered images in DOM (in #imagePreview we already show server images)
+        // So thumbs already covers both cases.
+
+        if (!thumbs.length) {
+            return '<p class="text-muted small mb-0">Belum ada gambar.</p>';
+        }
+
+        let html = '';
+        thumbs.forEach(src => {
+            const safe = escapeHtml(src);
+            html += `<div style="width:120px;height:120px;overflow:hidden;border-radius:6px;border:1px solid #eef2f6;margin-right:8px;"><img src="${safe}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+        });
+        return html;
+    }
+
+    /** Main renderer: baca nilai dari form dan isi placeholder di Publish tab */
+    function renderProductReview() {
+        // Basic fields
+        const name = $('input[name="name"]').val() || '';
+        const sku = $('input[name="sku"]').val() || '-';
+        const unitText = (() => {
+            const $u = $('#unitSelect');
+            if ($u.length) {
+                // try Select2 text if used
+                const sel = $u.find('option:selected').text();
+                return sel ? sel.trim() : '-';
+            }
+            return '-';
+        })();
+        const weight = $('input[name="weight_gram"]').val() || '-';
+
+        // categories: use select2 selected texts or native selected options
+        let categoriesText = '-';
+        const $cat = $('#categoriesSelect');
+        if ($cat.length) {
+            const selected = $cat.find('option:selected').map(function(){ return $(this).text().trim(); }).get();
+            if (selected.length) categoriesText = selected.map(s => `<span class="badge bg-light text-dark me-1">${escapeHtml(s)}</span>`).join(' ');
+        }
+
+        // descriptions: prefer Quill content if available
+        const shortDescHtml = (typeof editorShortDesc !== 'undefined' && editorShortDesc) ? getQuillContent(editorShortDesc) : ($('#short_description').val() || '');
+        const descHtml = (typeof editorDesc !== 'undefined' && editorDesc) ? getQuillContent(editorDesc) : ($('#description').val() || '');
+
+        // render into DOM
+        $('#review_name').html(escapeHtml(name) || '-');
+        $('#review_sku').html(escapeHtml(sku) || '-');
+        $('#review_unit').html(escapeHtml(unitText) || '-');
+        $('#review_categories').html(categoriesText);
+        $('#review_weight').html(escapeHtml(weight) !== '' ? escapeHtml(weight + ' gr') : '-');
+
+        $('#review_short_description').html(shortDescHtml ? shortDescHtml : '<span class="text-muted small">-</span>');
+        $('#review_description').html(descHtml ? descHtml : '<span class="text-muted small">-</span>');
+
+        // variants
+        $('#review_variants').html(buildVariantsReviewHtml());
+
+        // images
+        $('#review_images').html(buildImagesReviewHtml());
+    }
+
+    /** Bind render triggers:
+     * - when Publish tab becomes active
+     * - when key inputs change (optional live update)
+     */
+    function bindReviewTriggers() {
+        // on tab show (bootstrap tab event)
+        $(document).on('shown.bs.tab', 'a[data-bs-toggle="tab"]', function (e) {
+            const target = $(e.target).attr('href') || $(e.target).data('bs-target');
+            if (!target) return;
+            if (target === '#tabPublish') {
+                renderProductReview();
+            }
+        });
+
+        // also on click of data-wizard to go next to Publish
+        $('[data-wizard-next]').on('click', function() {
+            // detect if next is publish (quick check: last tab)
+            const active = $('.nav-tabs .nav-link.active');
+            const next = active.closest('li').next('li').find('.nav-link');
+            if (next.length && next.attr('href') === '#tabPublish') {
+                renderProductReview();
+            }
+        });
+
+        // Live updates: when user changes some important fields, update preview (debounced)
+        let debounceTimer = null;
+        function debounceRender() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(renderProductReview, 250);
+        }
+
+        $(document).on('input change', 'input[name="name"], input[name="sku"], input[name="weight_gram"], #unitSelect, #categoriesSelect', debounceRender);
+
+        // re-render when variants change (add/remove or input inside variants)
+        $(document).on('input change', '#variantsContainer', debounceRender);
+        $(document).on('click', '.btn-remove-variant, #btn-add-variant', function(){ setTimeout(renderProductReview, 150); });
+
+        // when images selected or preview changed
+        $(document).on('change', '#productImagesInput', debounceRender);
+        $(document).on('click', '.js-remove-local-image, .js-delete-image', function(){ setTimeout(renderProductReview, 200); });
+
+        // if Quill editors are ready, re-render when their content changes
+        if (editorShortDesc) {
+            editorShortDesc.on('text-change', debounceRender);
+        }
+        if (editorDesc) {
+            editorDesc.on('text-change', debounceRender);
+        }
+    }
+
+    /* initialize review binding at end of main ready */
+    $(function() {
+        try { bindReviewTriggers(); } catch (err) { console.warn('bindReviewTriggers error', err); }
+    });
+
 
     // Defensive: if there are no variant rows, add one empty
     if (!$('#variantsContainer .variant-row').length) {
