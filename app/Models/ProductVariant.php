@@ -33,4 +33,9 @@ class ProductVariant extends Model
         return $this->hasMany(\App\Models\ProductImage::class, 'variant_id');
         // jika model gambar kamu bernama ProductImage dan kolomnya variant_id, ganti class di atas.
     }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
 }

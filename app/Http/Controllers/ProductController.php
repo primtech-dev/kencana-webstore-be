@@ -116,7 +116,14 @@ class ProductController extends Controller
 
                     $path = $file->store("products/{$product->id}", 'public');
 
-                    ProductImage::create([
+                    // jika image ini akan menjadi main, unset main image sebelumnya untuk product-level (variant_id = NULL)
+                    if ($first) {
+                        \App\Models\ProductImage::where('product_id', $product->id)
+                            ->whereNull('variant_id')
+                            ->update(['is_main' => false]);
+                    }
+
+                    \App\Models\ProductImage::create([
                         'product_id' => $product->id,
                         'variant_id' => null,
                         'url' => $path,
@@ -215,7 +222,14 @@ class ProductController extends Controller
 
                     $path = $file->store("products/{$product->id}/variants/{$variantId}", 'public');
 
-                    ProductImage::create([
+                    // jika ini akan jadi main -> unset main sebelumnya untuk pasangan product+variant
+                    if ($firstImage) {
+                        \App\Models\ProductImage::where('product_id', $product->id)
+                            ->where('variant_id', $variantId)
+                            ->update(['is_main' => false]);
+                    }
+
+                    \App\Models\ProductImage::create([
                         'product_id' => $product->id,
                         'variant_id' => $variantId,
                         'url' => $path,
@@ -319,16 +333,27 @@ class ProductController extends Controller
 
             // 5) save global product images (product_images[])
             if ($request->hasFile('product_images')) {
+                $first = true;
                 foreach ($request->file('product_images') as $file) {
                     if (!$file || !$file->isValid()) continue;
                     $path = $file->store("products/{$product->id}", 'public');
-                    ProductImage::create([
+
+                    // jika gambar pertama dari request ingin jadi main -> unset main sebelumnya
+                    if ($first) {
+                        \App\Models\ProductImage::where('product_id', $product->id)
+                            ->whereNull('variant_id')
+                            ->update(['is_main' => false]);
+                    }
+
+                    \App\Models\ProductImage::create([
                         'product_id' => $product->id,
                         'variant_id' => null,
                         'url' => $path,
                         'position' => 0,
-                        'is_main' => false,
+                        'is_main' => $first ? true : false,
                     ]);
+
+                    $first = false;
                 }
             }
 
@@ -403,13 +428,24 @@ class ProductController extends Controller
                         continue;
                     }
                     $path = $file->store("products/{$product->id}/variants/{$variantId}", 'public');
-                    ProductImage::create([
+
+                    // jika file pertama untuk varian ini dari batch upload -> unset main sebelumnya
+                    if ($firstImage ?? true) {
+                        \App\Models\ProductImage::where('product_id', $product->id)
+                            ->where('variant_id', $variantId)
+                            ->update(['is_main' => false]);
+                    }
+
+                    \App\Models\ProductImage::create([
                         'product_id' => $product->id,
                         'variant_id' => $variantId,
                         'url' => $path,
                         'position' => 0,
-                        'is_main' => false,
+                        'is_main' => ($firstImage ?? true) ? true : false,
                     ]);
+
+                    // flip marker for next iterations
+                    $firstImage = false;
                 }
             }
 

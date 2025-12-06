@@ -32,4 +32,9 @@ class Product extends Model
     {
         return $this->belongsToMany(Category::class, 'product_categories')->withTimestamps()->using(\App\Models\ProductCategory::class);
     }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
 }
