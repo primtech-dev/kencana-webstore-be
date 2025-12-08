@@ -95,7 +95,7 @@
             <li class="side-nav-title mt-2">Pesanan & Pelanggan</li>
 
             <li class="side-nav-item">
-                <a href="" class="side-nav-link">
+                <a href="{{route('admin.orders.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="shopping-cart"></i></span>
                     <span class="menu-text">Pesanan</span>
                 </a>

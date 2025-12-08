@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockReceiptController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\OrderController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -145,6 +146,24 @@ Route::middleware(['auth'])->name('units.')->prefix('units')->group(function () 
     Route::put('/{id}', [UnitController::class, 'update'])->name('update')->middleware('permission:units.update');
     Route::delete('/{id}', [UnitController::class, 'destroy'])->name('destroy')->middleware('permission:units.delete');
     Route::get('/{id}', [UnitController::class, 'show'])->name('show')->middleware('permission:units.view');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
+
+        // Orders management (backoffice)
+        Route::middleware('can:orders.view')->group(function () {
+            Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+            Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+            Route::get('orders/{id}/print', [OrderController::class, 'print'])
+                ->name('orders.print');
+        });
+
+        Route::middleware('can:orders.manage')->group(function () {
+            Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+            Route::delete('orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
+        });
+    });
 });
 
 /*
