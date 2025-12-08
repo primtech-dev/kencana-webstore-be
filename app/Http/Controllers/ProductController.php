@@ -25,9 +25,12 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Product::select(['id','sku','name','is_active','created_at'])
+            // eager load unit (ambil kolom penting saja)
+            $query = Product::select(['id','sku','name','is_active','created_at','unit_id'])
                 ->withCount('variants')
-                ->with('unit'); // <-- pastikan unit dimuat
+                ->with(['unit' => function($q){
+                    $q->select('id','code','name');
+                }]);
 
             $searchValue = $request->input('search.value');
             if (!empty($searchValue)) {
@@ -39,8 +42,8 @@ class ProductController extends Controller
 
             return datatables()->eloquent($query)
                 ->addIndexColumn()
-                ->addColumn('is_active', function (Product $p) { return $p->is_active ? 'Aktif' : 'Non-aktif'; })
-                ->addColumn('variants_count', function ($p) { return $p->variants_count; })
+                ->addColumn('name', fn(Product $p) => e($p->name))
+                // deliver unit as formatted string so client simple
                 ->addColumn('unit', function (Product $p) {
                     if ($p->unit) {
                         $code = $p->unit->code ? e($p->unit->code).' • ' : '';
@@ -48,7 +51,10 @@ class ProductController extends Controller
                     }
                     return '-';
                 })
-                ->addColumn('created_at', function ($p) { return $p->created_at ? $p->created_at->format('d M Y H:i') : '-'; })
+                ->addColumn('sku', fn(Product $p) => $p->sku ? e($p->sku) : '-')
+                ->addColumn('variants_count', fn($p) => $p->variants_count)
+                ->addColumn('is_active', fn(Product $p) => $p->is_active ? 'Aktif' : 'Non-aktif')
+                ->addColumn('created_at', fn($p) => $p->created_at ? $p->created_at->format('d M Y H:i') : '-')
                 ->addColumn('action', function (Product $p) {
                     return view('products._column_action', ['p'=>$p])->render();
                 })
@@ -73,6 +79,8 @@ class ProductController extends Controller
 
         // prepare validated (includes normalized attributes)
         $validated = $this->prepareValidated($request);
+
+        return $validated;
 
         DB::beginTransaction();
         try {
@@ -279,6 +287,8 @@ class ProductController extends Controller
         $this->validateRequestProduct($request, $product);
 
         $validated = $this->prepareValidated($request);
+
+//        return $validated['unit_id'];
 
         DB::beginTransaction();
         try {
@@ -518,7 +528,7 @@ class ProductController extends Controller
             'is_active' => 'sometimes|boolean',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
-            'unit_id' => 'nullable|integer|exists:units,id',
+            'unit_id' => 'nullable',
             'variants' => 'nullable|array',
             'variants.*.id' => 'nullable|integer|exists:product_variants,id',
             'variants.*.variant_name' => 'sometimes|required|string|max:255',

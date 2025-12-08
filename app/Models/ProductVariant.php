@@ -10,7 +10,7 @@ class ProductVariant extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'product_id','sku','variant_name', 'length','width','height','is_active','is_sellable', 'price'
+        'product_id','sku','variant_name', 'length','width','height','is_active','is_sellable', 'price','unit_id'
     ];
 
     protected $casts = [
