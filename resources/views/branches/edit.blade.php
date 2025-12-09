@@ -145,7 +145,7 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/pages/admin/branches-form.js'])
+    @vite(['resources/js/pages/branches/branches-form.js'])
 
     @if($errors->any())
         <script>
