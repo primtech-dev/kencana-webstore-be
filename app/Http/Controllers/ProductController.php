@@ -80,8 +80,6 @@ class ProductController extends Controller
         // prepare validated (includes normalized attributes)
         $validated = $this->prepareValidated($request);
 
-        return $validated;
-
         DB::beginTransaction();
         try {
             // 1) create product
