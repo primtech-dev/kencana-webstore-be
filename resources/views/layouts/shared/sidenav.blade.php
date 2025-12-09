@@ -63,12 +63,12 @@
                 </a>
             </li>
 
-            <li class="side-nav-item">
-                <a href="" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="box"></i></span>
-                    <span class="menu-text">Inventory</span>
-                </a>
-            </li>
+{{--            <li class="side-nav-item">--}}
+{{--                <a href="" class="side-nav-link">--}}
+{{--                    <span class="menu-icon"><i data-lucide="box"></i></span>--}}
+{{--                    <span class="menu-text">Inventory</span>--}}
+{{--                </a>--}}
+{{--            </li>--}}
 
             <li class="side-nav-item">
                 <a href="{{route('stock_receipts.index')}}" class="side-nav-link">
@@ -154,21 +154,21 @@
 {{--            </li>--}}
 
             <!-- Promosi & Kupon -->
-            <li class="side-nav-title mt-2">Promosi & Kupon</li>
+{{--            <li class="side-nav-title mt-2">Promosi & Kupon</li>--}}
 
-            <li class="side-nav-item">
-                <a href="" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="gift"></i></span>
-                    <span class="menu-text">Promosi</span>
-                </a>
-            </li>
+{{--            <li class="side-nav-item">--}}
+{{--                <a href="" class="side-nav-link">--}}
+{{--                    <span class="menu-icon"><i data-lucide="gift"></i></span>--}}
+{{--                    <span class="menu-text">Promosi</span>--}}
+{{--                </a>--}}
+{{--            </li>--}}
 
-            <li class="side-nav-item">
-                <a href="" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="ticket"></i></span>
-                    <span class="menu-text">Kupon</span>
-                </a>
-            </li>
+{{--            <li class="side-nav-item">--}}
+{{--                <a href="" class="side-nav-link">--}}
+{{--                    <span class="menu-icon"><i data-lucide="ticket"></i></span>--}}
+{{--                    <span class="menu-text">Kupon</span>--}}
+{{--                </a>--}}
+{{--            </li>--}}
 
             <!-- Pengiriman & Fulfillment -->
 {{--            <li class="side-nav-title mt-2">Pengiriman & Fulfillment</li>--}}
@@ -239,14 +239,14 @@
 {{--            </li>--}}
 
             <!-- Optional: Reviews & Wishlist -->
-            <li class="side-nav-title mt-2">Umpan Balik</li>
+{{--            <li class="side-nav-title mt-2">Umpan Balik</li>--}}
 
-            <li class="side-nav-item">
-                <a href="" class="side-nav-link">
-                    <span class="menu-icon"><i data-lucide="star"></i></span>
-                    <span class="menu-text">Ulasan</span>
-                </a>
-            </li>
+{{--            <li class="side-nav-item">--}}
+{{--                <a href="" class="side-nav-link">--}}
+{{--                    <span class="menu-icon"><i data-lucide="star"></i></span>--}}
+{{--                    <span class="menu-text">Ulasan</span>--}}
+{{--                </a>--}}
+{{--            </li>--}}
 
 {{--            <li class="side-nav-item">--}}
 {{--                <a href="" class="side-nav-link">--}}
