@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,17 +11,36 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // ==== Permissions & Roles ====
         $this->call([
             PermissionSeeder::class,
             RoleSeeder::class,
-            UserSeeder::class,
+            RolePermissionSeeder::class,
+            RolePermissionSyncSeeder::class,
+        ]);
+
+        // ==== Permission Modules ====
+        $this->call([
             BranchesPermissionSeeder::class,
             CategoryPermissionSeeder::class,
+            CustomerPermissionSeeder::class,
+            OrdersPermissionSeeder::class,
+            PaymentMethodSeeder::class,
             PermissionProductSeeder::class,
-            RolePermissionSyncSeeder::class,
-            RolePermissionSeeder::class,
             StockPermissionSeeder::class,
-            CustomerPermissionSeeder::class
+            UnitPermissionSeeder::class,
+        ]);
+
+        // ==== Master Data ====
+        $this->call([
+            UserSeeder::class,
+            CustomerSeeder::class,
+        ]);
+
+        // ==== Dummy Orders (opsional) ====
+        $this->call([
+            OrderDummySeeder::class,
+            OrderDummySeeder2::class,
         ]);
     }
 }
