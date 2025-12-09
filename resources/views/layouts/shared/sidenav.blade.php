@@ -198,7 +198,7 @@
             </li>
 
             <li class="side-nav-item">
-                <a href="{{route('permisspermissionions.index')}}" class="side-nav-link">
+                <a href="{{route('permissions.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="key"></i></span>
                     <span class="menu-text">Permission</span>
                 </a>
