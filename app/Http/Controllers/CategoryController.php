@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Support\ImageUploader;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -63,10 +65,22 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|integer|exists:categories,id',
             'position' => 'nullable|integer',
             'is_active' => 'sometimes|boolean',
+            'banner' => 'nullable|image|max:5120', // 2MB
+            'banner_alt' => 'nullable|string|max:255',
         ], self::VALIDATION_MESSAGES);
 
         try {
+            if ($request->hasFile('banner')) {
+                $validated['banner_path'] = ImageUploader::uploadWebp(
+                    $request->file('banner'),
+                    'categories/banners',
+                    1600,
+                    80
+                );
+            }
+
             Category::create($validated);
+
             return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan');
         } catch (\Throwable $th) {
             return redirect()->back()->withInput()->with('error', $th->getMessage());
@@ -93,9 +107,26 @@ class CategoryController extends Controller
             }],
             'position' => 'nullable|integer',
             'is_active' => 'sometimes|boolean',
+            'banner' => 'nullable|image|max:5120',
+            'banner_alt' => 'nullable|string|max:255',
         ], self::VALIDATION_MESSAGES);
 
         try {
+            if ($request->hasFile('banner')) {
+                // hapus banner lama
+                if ($category->banner_path) {
+                    Storage::disk('public')->delete($category->banner_path);
+                }
+
+                $validated['banner_path'] = ImageUploader::uploadWebp(
+                    $request->file('banner'),
+                    'categories/banners',
+                    1600,
+                    80
+                );
+            }
+
+
             $category->update($validated);
             return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui');
         } catch (\Throwable $th) {
