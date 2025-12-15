@@ -99,6 +99,7 @@
                    class="form-control"
                    accept="image/*"
                    multiple>
+            <small class="text-muted">Maksimal ukuran gambar 3MB (JPG / PNG / WebP)</small>
         </div>
 
         @if(!empty($v_images))

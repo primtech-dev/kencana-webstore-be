@@ -265,6 +265,7 @@
                                         <label class="form-label">Upload Gambar Produk (multiple)</label>
                                         <input type="file" id="productImagesInput" name="product_images[]" class="form-control" multiple accept="image/*" />
                                         <small class="text-muted">Selain gambar global, setiap varian juga punya field gambar di varian.</small>
+                                        <small class="text-muted">Maksimal ukuran gambar 3MB (JPG / PNG / WebP)</small>
                                     </div>
 
                                     <div id="imagePreview" class="d-flex flex-wrap gap-2">
