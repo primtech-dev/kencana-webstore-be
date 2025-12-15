@@ -17,7 +17,7 @@
         ]
     ])
 
-    <form action="{{ route('categories.update', $category->id) }}" method="POST" id="categoryForm">
+    <form action="{{ route('categories.update', $category->id) }}" method="POST" id="categoryForm" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -59,6 +59,20 @@
                             <input id="position" type="number" name="position" class="form-control @error('position') is-invalid @enderror"
                                    value="{{ old('position', $category->position) }}" min="0">
                             @error('position')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Banner Kategori</label>
+                            <input type="file" name="banner" class="form-control @error('banner') is-invalid @enderror" accept="image/*">
+                            @error('banner')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <small class="text-muted">Rekomendasi ukuran: 1200×400 px (JPG / PNG)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Alt Text Banner</label>
+                            <input type="text" name="banner_alt" class="form-control"
+                                   value="{{ old('banner_alt', $category->banner_alt ?? '') }}">
+                            <small class="text-muted">Untuk SEO & accessibility</small>
                         </div>
 
                     </div>
@@ -110,6 +124,17 @@
                         </ul>
                     </div>
                 </div>
+
+                @if(!empty($category->banner_url))
+                    <div class="mb-3">
+                        <label class="form-label">Banner Saat Ini</label>
+                        <div class="border rounded p-2">
+                            <img src="{{ $category->banner_url }}"
+                                 alt="{{ $category->banner_alt }}"
+                                 class="img-fluid rounded">
+                        </div>
+                    </div>
+                @endif
 
                 <div class="card">
                     <div class="card-body">
