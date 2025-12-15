@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
+use App\Support\ImageUploader;
 
 class ProductController extends Controller
 {
@@ -133,7 +134,10 @@ class ProductController extends Controller
                 foreach ($request->file('product_images') as $file) {
                     if (!$file || !$file->isValid()) continue;
 
-                    $path = $file->store("products/{$product->id}", 'public');
+                    $path = ImageUploader::uploadWebp(
+                        $file,
+                        "products/{$product->id}"
+                    );
 
                     // jika image ini akan menjadi main, unset main image sebelumnya untuk product-level (variant_id = NULL)
                     if ($first) {
@@ -239,7 +243,10 @@ class ProductController extends Controller
                         continue;
                     }
 
-                    $path = $file->store("products/{$product->id}/variants/{$variantId}", 'public');
+                    $path = ImageUploader::uploadWebp(
+                        $file,
+                        "products/{$product->id}/variants/{$variantId}"
+                    );
 
                     // jika ini akan jadi main -> unset main sebelumnya untuk pasangan product+variant
                     if ($firstImage) {
@@ -361,7 +368,11 @@ class ProductController extends Controller
                 $first = true;
                 foreach ($request->file('product_images') as $file) {
                     if (!$file || !$file->isValid()) continue;
-                    $path = $file->store("products/{$product->id}", 'public');
+
+                    $path = ImageUploader::uploadWebp(
+                        $file,
+                        "products/{$product->id}"
+                    );
 
                     // jika gambar pertama dari request ingin jadi main -> unset main sebelumnya
                     if ($first) {
@@ -452,7 +463,11 @@ class ProductController extends Controller
                         \Log::warning("update: invalid variant file for variant id {$variantId}");
                         continue;
                     }
-                    $path = $file->store("products/{$product->id}/variants/{$variantId}", 'public');
+
+                    $path = ImageUploader::uploadWebp(
+                        $file,
+                        "products/{$product->id}/variants/{$variantId}"
+                    );
 
                     // jika file pertama untuk varian ini dari batch upload -> unset main sebelumnya
                     if ($firstImage ?? true) {
@@ -527,6 +542,7 @@ class ProductController extends Controller
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
             'unit_id' => 'nullable',
+            'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:3072',
             'variants' => 'nullable|array',
             'variants.*.id' => 'nullable|integer|exists:product_variants,id',
             'variants.*.variant_name' => 'sometimes|required|string|max:255',
@@ -537,6 +553,7 @@ class ProductController extends Controller
             'variants.*.height' => 'nullable|numeric',
             'variants.*.is_active' => 'sometimes|boolean',
             'variants.*.is_sellable' => 'sometimes|boolean',
+            'variants.*.images.*' => 'image|mimes:jpg,jpeg,png,webp|max:3072',
         ];
 
         $request->validate($rules, self::VALIDATION_MESSAGES);
@@ -583,7 +600,7 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $request->validate([
-            'image' => 'required|image|max:4096',
+            'image' => 'required|image|max:3072',
             'variant_id' => 'nullable|integer|exists:product_variants,id',
             'is_main' => 'sometimes|boolean',
             'position' => 'nullable|integer',
