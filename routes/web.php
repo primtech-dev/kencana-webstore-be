@@ -10,6 +10,7 @@ use App\Http\Controllers\StockReceiptController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\DashboardController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -21,13 +22,7 @@ use Illuminate\Support\Facades\Route;
 require __DIR__ . '/auth.php';
 
 Route::middleware(['auth'])->group(function () {
-
-    // ROOT → DASHBOARD
-    Route::get('/', function () {
-        return view('dashboard.dashboard');
-    })->name('dashboard');
-
-
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 Route::middleware(['auth'])->name('branches.')->prefix('branches')->group(function () {
