@@ -17,9 +17,12 @@ class HomeBannerController extends Controller
 
             return datatables()->eloquent($query)
                 ->addIndexColumn()
-                ->addColumn('image', fn ($b) =>
-                    '<img src="'.$b->image_url.'" width="120" class="rounded">'
-                )
+                ->addColumn('image', function ($b) {
+                    return '<img src="'.$b->image_url.'"
+                 style="max-width:120px;height:auto"
+                 class="rounded img-fluid">';
+                })
+
                 ->addColumn('status', fn ($b) =>
                 $b->is_active ? 'Aktif' : 'Non-aktif'
                 )
