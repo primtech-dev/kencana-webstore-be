@@ -312,7 +312,7 @@
     ]
   },
   "resources/js/pages/categories/categories.js": {
-    "file": "assets/categories-C0ZYk5M8.js",
+    "file": "assets/categories-BroNnugC.js",
     "name": "categories",
     "src": "resources/js/pages/categories/categories.js",
     "isEntry": true,
@@ -434,7 +434,7 @@
     ]
   },
   "resources/js/pages/dashboard.js": {
-    "file": "assets/dashboard-TsKQD0KC.js",
+    "file": "assets/dashboard-DeZHy-n3.js",
     "name": "dashboard",
     "src": "resources/js/pages/dashboard.js",
     "isEntry": true,
@@ -639,6 +639,18 @@
     "name": "form-wizard",
     "src": "resources/js/pages/form-wizard.js",
     "isEntry": true
+  },
+  "resources/js/pages/home-banners/index.js": {
+    "file": "assets/index-s_rJGCUh.js",
+    "name": "index",
+    "src": "resources/js/pages/home-banners/index.js",
+    "isEntry": true,
+    "imports": [
+      "_dataTables.bootstrap5-SLVZVhPx.js",
+      "_jquery-DxCMfk7S.js",
+      "__commonjsHelpers-D6-XlEtG.js",
+      "_jquery-BQXThELV.js"
+    ]
   },
   "resources/js/pages/landing.js": {
     "file": "assets/landing-aZwYVa06.js",

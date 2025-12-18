@@ -11,6 +11,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeBannerController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -158,6 +159,21 @@ Route::middleware(['auth'])->group(function () {
             Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
             Route::delete('orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
         });
+    });
+});
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+    Route::middleware('can:home_banners.view')->group(function () {
+        Route::get('home-banners', [HomeBannerController::class, 'index'])->name('home-banners.index');
+        Route::get('home-banners/create', [HomeBannerController::class, 'create'])->name('home-banners.create');
+        Route::get('home-banners/{id}/edit', [HomeBannerController::class, 'edit'])->name('home-banners.edit');
+    });
+
+    Route::middleware('can:home_banners.manage')->group(function () {
+        Route::post('home-banners', [HomeBannerController::class, 'store'])->name('home-banners.store');
+        Route::put('home-banners/{id}', [HomeBannerController::class, 'update'])->name('home-banners.update');
+        Route::delete('home-banners/{id}', [HomeBannerController::class, 'destroy'])->name('home-banners.destroy');
     });
 });
 
