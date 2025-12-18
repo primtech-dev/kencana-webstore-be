@@ -136,6 +136,18 @@
                     </div>
                 @endif
 
+                @if($category->thumbnail_url)
+                    <div class="mb-3">
+                        <label class="form-label">Thumbnail Saat Ini</label>
+                        <div class="border rounded p-2 d-inline-block">
+                            <img src="{{ $category->thumbnail_url }}"
+                                 alt="{{ $category->name }}"
+                                 style="width:120px;height:auto"
+                                 class="img-fluid rounded">
+                        </div>
+                    </div>
+                @endif
+
                 <div class="card">
                     <div class="card-body">
                         <div class="d-grid gap-2">

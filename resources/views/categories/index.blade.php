@@ -31,6 +31,7 @@
                         <tr>
                             <th width="5%">No</th>
                             <th>Nama</th>
+                            <th width="8%">Thumbnail</th>
                             <th>Slug</th>
                             <th>Parent</th>
                             <th width="8%">Posisi</th>
