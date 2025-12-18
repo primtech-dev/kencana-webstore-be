@@ -79,6 +79,18 @@
                             <small class="text-muted">Untuk SEO & accessibility</small>
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">Thumbnail Kategori</label>
+                            <input type="file"
+                                   name="thumbnail"
+                                   class="form-control @error('thumbnail') is-invalid @enderror"
+                                   accept="image/*">
+                            @error('thumbnail')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <small class="text-muted">
+                                Digunakan untuk icon / list kategori. Rekomendasi: 400×400 px. Max: 3 MB
+                            </small>
+                        </div>
+
                     </div>
                 </div>
 

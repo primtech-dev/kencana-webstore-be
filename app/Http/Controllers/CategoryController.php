@@ -19,7 +19,7 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Category::select(['id','name','slug','parent_id','position','is_active','created_at'])
+            $query = Category::select(['id','name','slug','parent_id','position','is_active','created_at', 'thumbnail'])
                 ->with('parent');
 
             $searchValue = $request->input('search.value');
@@ -41,10 +41,15 @@ class CategoryController extends Controller
                 ->addColumn('created_at', function ($c) {
                     return $c->created_at ? $c->created_at->format('d M Y H:i') : '-';
                 })
+                ->addColumn('thumbnail', function (Category $c) {
+                    return $c->thumbnail_url
+                        ? '<img src="'.$c->thumbnail_url.'" width="40" class="rounded">'
+                        : '-';
+                })
                 ->addColumn('action', function ($c) {
                     return view('categories._column_action', ['c' => $c])->render();
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['thumbnail','action'])
                 ->toJson();
         }
 
@@ -65,8 +70,9 @@ class CategoryController extends Controller
             'parent_id' => 'nullable|integer|exists:categories,id',
             'position' => 'nullable|integer',
             'is_active' => 'sometimes|boolean',
-            'banner' => 'nullable|image|max:5120', // 2MB
+            'banner' => 'nullable|image|max:5120',
             'banner_alt' => 'nullable|string|max:255',
+            'thumbnail' => 'nullable|image|max:3000',
         ], self::VALIDATION_MESSAGES);
 
         try {
@@ -75,6 +81,15 @@ class CategoryController extends Controller
                     $request->file('banner'),
                     'categories/banners',
                     1600,
+                    80
+                );
+            }
+
+            if ($request->hasFile('thumbnail')) {
+                $validated['thumbnail'] = ImageUploader::uploadWebp(
+                    $request->file('thumbnail'),
+                    'categories/thumbnails',
+                    600,   // thumbnail lebih kecil
                     80
                 );
             }
@@ -109,6 +124,7 @@ class CategoryController extends Controller
             'is_active' => 'sometimes|boolean',
             'banner' => 'nullable|image|max:5120',
             'banner_alt' => 'nullable|string|max:255',
+            'thumbnail' => 'nullable|image|max:3000',
         ], self::VALIDATION_MESSAGES);
 
         try {
@@ -122,6 +138,19 @@ class CategoryController extends Controller
                     $request->file('banner'),
                     'categories/banners',
                     1600,
+                    80
+                );
+            }
+
+            if ($request->hasFile('thumbnail')) {
+                if ($category->thumbnail) {
+                    Storage::disk('public')->delete($category->thumbnail);
+                }
+
+                $validated['thumbnail'] = ImageUploader::uploadWebp(
+                    $request->file('thumbnail'),
+                    'categories/thumbnails',
+                    600,
                     80
                 );
             }
