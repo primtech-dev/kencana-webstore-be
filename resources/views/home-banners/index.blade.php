@@ -1,4 +1,7 @@
 @extends('layouts.vertical', ['title' => 'Home Banner'])
+@section('styles')
+    @vite(['node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css'])
+@endsection
 
 @section('content')
     @include('layouts.shared.page-title', [
@@ -14,18 +17,19 @@
             </a>
         </div>
         <div class="card-body">
-            <table class="table" id="bannerTable">
-                <thead>
+            <table class="table table-striped dt-responsive align-middle w-100" id="homeBannersTable">
+                <thead class="thead-sm text-uppercase fs-xxs">
                 <tr>
-                    <th>No</th>
-                    <th>Banner</th>
+                    <th width="5%">No</th>
+                    <th width="20%">Banner</th>
                     <th>Kode</th>
                     <th>Judul</th>
-                    <th>Urutan</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    <th width="8%">Urutan</th>
+                    <th width="10%">Status</th>
+                    <th width="12%" class="text-center">Aksi</th>
                 </tr>
                 </thead>
+                <tbody></tbody>
             </table>
         </div>
     </div>
