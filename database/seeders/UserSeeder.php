@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
         $role = Role::firstOrCreate(['name' => 'superadmin']);
         $superAdmin->syncRoles([$role->name]);
 
-        \Spatie\Permission\PermissionRegistrar::forgetCachedPermissions();
+        // \Spatie\Permission\PermissionRegistrar::forgetCachedPermissions();
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
