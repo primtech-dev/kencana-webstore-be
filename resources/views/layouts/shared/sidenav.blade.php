@@ -252,21 +252,21 @@
             {{--            </li>--}}
 
             <!-- Optional: Reviews & Wishlist -->
-            {{--            <li class="side-nav-title mt-2">Umpan Balik</li>--}}
+            <li class="side-nav-title mt-2">Umpan Balik</li>
 
-            {{--            <li class="side-nav-item">--}}
-            {{--                <a href="" class="side-nav-link">--}}
-            {{--                    <span class="menu-icon"><i data-lucide="star"></i></span>--}}
-            {{--                    <span class="menu-text">Ulasan</span>--}}
-            {{--                </a>--}}
-            {{--            </li>--}}
+            <li class="side-nav-item">
+                <a href="{{route('admin.reviews.index')}}" class="side-nav-link">
+                    <span class="menu-icon"><i data-lucide="star"></i></span>
+                    <span class="menu-text">Ulasan</span>
+                </a>
+            </li>
 
-            {{--            <li class="side-nav-item">--}}
-            {{--                <a href="" class="side-nav-link">--}}
-            {{--                    <span class="menu-icon"><i data-lucide="heart"></i></span>--}}
-            {{--                    <span class="menu-text">Wishlist</span>--}}
-            {{--                </a>--}}
-            {{--            </li>--}}
+{{--            <li class="side-nav-item">--}}
+{{--                <a href="" class="side-nav-link">--}}
+{{--                    <span class="menu-icon"><i data-lucide="heart"></i></span>--}}
+{{--                    <span class="menu-text">Wishlist</span>--}}
+{{--                </a>--}}
+{{--            </li>--}}
 
         </ul>
     </div>

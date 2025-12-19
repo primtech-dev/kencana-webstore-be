@@ -12,6 +12,7 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeBannerController;
+use App\Http\Controllers\ReviewController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -176,6 +177,22 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('home-banners/{id}', [HomeBannerController::class, 'destroy'])->name('home-banners.destroy');
     });
 });
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+    Route::middleware('can:reviews.view')->group(function () {
+        Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/{id}', [ReviewController::class, 'show'])->name('reviews.show');
+    });
+
+    Route::middleware('can:reviews.manage')->group(function () {
+        Route::patch('reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.update-status');
+        Route::delete('reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+        Route::delete('review-images/{id}', [ReviewController::class, 'destroyImage'])->name('review-images.destroy');
+    });
+
+});
+
 
 /*
 |--------------------------------------------------------------------------
