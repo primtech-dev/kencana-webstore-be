@@ -785,6 +785,19 @@
       "_index-BEKk9TLb.js"
     ]
   },
+  "resources/js/pages/reviews/index.js": {
+    "file": "assets/index-BqcRLaWk.js",
+    "name": "index",
+    "src": "resources/js/pages/reviews/index.js",
+    "isEntry": true,
+    "imports": [
+      "_dataTables.bootstrap5-SLVZVhPx.js",
+      "_responsive.bootstrap5-CO5iH43l.js",
+      "_jquery-DxCMfk7S.js",
+      "__commonjsHelpers-D6-XlEtG.js",
+      "_jquery-BQXThELV.js"
+    ]
+  },
   "resources/js/pages/settings/permissions-form.js": {
     "file": "assets/permissions-form-B4D-FmJz.js",
     "name": "permissions-form",
