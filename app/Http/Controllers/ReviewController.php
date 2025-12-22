@@ -12,24 +12,45 @@ class ReviewController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Review::with(['customer','product']);
+            $query = Review::with([
+                'customer:id,full_name',
+                'product:id,name',
+                'order:id,order_no'
+            ]);
 
             return datatables()->eloquent($query)
                 ->addIndexColumn()
+
+                ->addColumn('product_name', fn ($r) =>
+                    $r->product?->name ?? '-'
+                )
+
+                ->addColumn('customer_name', fn ($r) =>
+                    $r->customer?->full_name ?? '-'
+                )
+
+                ->addColumn('order_no', fn ($r) =>
+                    $r->order?->order_no ?? '-'
+                )
+
                 ->addColumn('rating', fn ($r) =>
                     '<span class="badge '.$r->ratingBadgeClass().'">'
                     .$r->rating.' ★</span>'
                 )
+
                 ->addColumn('status', fn ($r) =>
                     '<span class="badge bg-secondary">'
                     .ucfirst($r->status).'</span>'
                 )
+
                 ->addColumn('created_at', fn ($r) =>
                 $r->created_at?->format('d M Y H:i')
                 )
+
                 ->addColumn('action', fn ($r) =>
                 view('reviews._column_action', compact('r'))->render()
                 )
+
                 ->rawColumns(['rating','status','action'])
                 ->toJson();
         }

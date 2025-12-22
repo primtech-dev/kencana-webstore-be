@@ -15,15 +15,16 @@
             <table id="reviewsTable"
                    class="table table-striped dt-responsive w-100">
                 <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Produk</th>
-                    <th>Customer</th>
-                    <th>Rating</th>
-                    <th>Status</th>
-                    <th>Tanggal</th>
-                    <th class="text-center">Aksi</th>
-                </tr>
+                    <tr>
+                        <th>No</th>
+                        <th>Produk</th>
+                        <th>Customer</th>
+                        <th>No Order</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th>Tanggal</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
                 </thead>
             </table>
         </div>

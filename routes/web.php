@@ -97,6 +97,27 @@ Route::middleware(['auth'])->name('users.')->prefix('users')->group(function () 
     Route::get('/{id}', [UserController::class, 'show'])->name('show')->middleware('permission:users.view');
 });
 
+Route::middleware(['auth','permission:products.create'])
+    ->prefix('products/import')
+    ->name('products.import.')
+    ->group(function () {
+        Route::get('/', [ProductController::class, 'importForm'])->name('form');
+        Route::post('/preview', [ProductController::class, 'importPreview'])->name('preview');
+        Route::post('/confirm', [ProductController::class, 'importProcess'])->name('process');
+    });
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/products/import/template',
+        [ProductController::class, 'downloadImportTemplate']
+    )->name('products.import.template');
+
+    Route::get('/products/import/example-images',
+        [ProductController::class, 'downloadImportImagesExample']
+    )->name('products.import.images_example');
+
+});
+
 Route::middleware(['auth'])->name('products.')->prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index'])->name('index')->middleware('permission:products.view');
     Route::get('/create', [ProductController::class, 'create'])->name('create')->middleware('permission:products.create');

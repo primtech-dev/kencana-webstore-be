@@ -165,16 +165,16 @@ $(function() {
             }
         },
         columns: [
-            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'order_no', name: 'order_no' },
-            { data: 'customer', name: 'customer', orderable: false, searchable: true },
-            { data: 'branch', name: 'branch', orderable: false, searchable: true },
-            { data: 'total_amount', name: 'total_amount', className: 'text-end' },
-            { data: 'status', name: 'status', className: 'text-center' },
+            { data: 'customer', orderable: false },
+            { data: 'branch', orderable: false },
+            { data: 'total_amount', name: 'total_amount' },
+            { data: 'status', name: 'status' },
             { data: 'created_at', name: 'created_at' },
-            { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
+            { data: 'action', orderable: false, searchable: false }
         ],
-        order: [[6, 'desc']],
+        order: [[6, 'desc']], // default terbaru
         drawCallback: function() {
             try { if (window.lucide && typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e) {}
             initTooltips(document.querySelector('#orders-table'));

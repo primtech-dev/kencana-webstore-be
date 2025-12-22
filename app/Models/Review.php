@@ -38,6 +38,14 @@ class Review extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function variant()
+    {
+        return $this->belongsTo(
+            ProductVariant::class,
+            'variant_id' // FK di table reviews
+        );
+    }
+
     public function ratingBadgeClass(): string
     {
         return match ($this->rating) {
@@ -47,5 +55,10 @@ class Review extends Model
             2 => 'bg-orange',
             default => 'bg-danger',
         };
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }
