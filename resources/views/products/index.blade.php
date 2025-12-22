@@ -22,6 +22,11 @@
                         <a href="{{ route('products.create') }}" class="btn btn-primary">
                             <i data-lucide="plus" class="me-1"></i> Tambah Produk
                         </a>
+
+                        <a href="{{ route('products.import.form') }}" class="btn btn-outline-primary">
+                            <i data-lucide="upload" class="me-1"></i> Import Excel
+                        </a>
+
                     @endcan
                 </div>
                 <div class="card-body">

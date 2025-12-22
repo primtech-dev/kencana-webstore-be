@@ -7,14 +7,19 @@ $(function () {
         serverSide: true,
         responsive: true,
         ajax: window.reviewRoutes.index,
+
+        // ✅ default sort terbaru TANPA sentuh controller
+        order: [[6, 'desc']], // created_at column index
+
         columns: [
-            { data: 'DT_RowIndex', orderable:false },
-            { data: 'product.name', defaultContent:'-' },
-            { data: 'customer.name', defaultContent:'-' },
-            { data: 'rating', orderable:false },
+            { data: 'DT_RowIndex', orderable:false, searchable:false },
+            { data: 'product_name', defaultContent:'-' },
+            { data: 'customer_name', defaultContent:'-' },
+            { data: 'order_no', defaultContent:'-' },
+            { data: 'rating', orderable:false, searchable:false },
             { data: 'status', orderable:false },
             { data: 'created_at' },
-            { data: 'action', orderable:false }
+            { data: 'action', orderable:false, searchable:false }
         ]
     });
 });

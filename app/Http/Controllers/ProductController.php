@@ -14,7 +14,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
 use App\Support\ImageUploader;
-
+use Maatwebsite\Excel\Facades\Excel;
+use ZipArchive;
 class ProductController extends Controller
 {
     private const VALIDATION_MESSAGES = [
@@ -707,4 +708,478 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Server error'], 500);
         }
     }
+
+    public function importForm()
+    {
+        return view('products.import');
+    }
+
+    public function importPreview(Request $request)
+    {
+        $request->validate([
+            'excel' => 'required|file|mimes:xlsx,xls',
+            'images_zip' => 'required|file|mimes:zip',
+        ]);
+
+        // 🔒 SIMPAN FILE SEKALI (SOURCE OF TRUTH)
+        $excelPath = $request->file('excel')->store('tmp/import', 'local');
+        $zipPath   = $request->file('images_zip')->store('tmp/import', 'local');
+
+        $excelFullPath = Storage::disk('local')->path($excelPath);
+        $zipFullPath   = Storage::disk('local')->path($zipPath);
+
+        /* ================= ZIP EXTRACT ================= */
+        $extractPath = storage_path('app/tmp-preview/' . Str::uuid());
+        mkdir($extractPath, 0777, true);
+
+        $zip = new \ZipArchive();
+        $status = $zip->open($zipFullPath, \ZipArchive::RDONLY);
+
+        if ($status !== true) {
+            throw new \Exception('Gagal membuka ZIP. Code: '.$status);
+        }
+
+        $zip->extractTo($extractPath);
+        $zip->close();
+
+        $fileIndex = $this->buildZipFileIndex($extractPath);
+
+        /* ================= READ EXCEL ================= */
+        $rows = \Maatwebsite\Excel\Facades\Excel::toArray([], $excelFullPath)[0];
+        $header = array_map('trim', array_shift($rows));
+
+        $preview = [];
+        $fatalErrors = [];
+        $warnings = [];
+
+        foreach ($rows as $i => $row) {
+            if (count(array_filter($row)) === 0) continue;
+
+            $data = array_combine($header, $row);
+            $rowNum = $i + 2;
+
+            // UNIT CHECK (FATAL)
+            $unitId = $this->resolveUnitId($data['unit'] ?? null);
+            if (!empty($data['unit']) && !$unitId) {
+                $fatalErrors[] = "Baris {$rowNum}: unit '{$data['unit']}' tidak ditemukan";
+            }
+
+            if (!empty($data['weight_gram']) && !is_numeric($data['weight_gram'])) {
+                $fatalErrors[] = "Baris {$rowNum}: berat harus angka (gram)";
+            }
+
+            $categoryPreview = $this->previewCategories($data['categories'] ?? null);
+
+            $hasNewCategory = collect($categoryPreview)->contains(fn($c) => $c['exists'] === false);
+
+            if ($hasNewCategory) {
+                $warnings[] = "Baris {$rowNum}: terdapat kategori baru yang akan dibuat otomatis";
+            }
+
+            // IMAGE CHECK (WARNING)
+            $missingImages = [];
+            foreach (['product_images', 'variant_images'] as $col) {
+                if (!empty($data[$col])) {
+                    foreach (explode('|', $data[$col]) as $img) {
+                        $key = strtolower(trim($img));
+                        if (!isset($fileIndex[$key])) {
+                            $missingImages[] = trim($img);
+                        }
+                    }
+                }
+            }
+
+            if (!empty($missingImages)) {
+                $warnings[] = "Baris {$rowNum}: gambar tidak ditemukan → " . implode(', ', $missingImages);
+            }
+
+            $preview[] = [
+                'row' => $rowNum,
+                'product' => $data['product_name'] ?? '-',
+                'variant' => $data['variant_name'] ?? '-',
+                'unit' => $data['unit'] ?? '-',
+                'categories' => $categoryPreview,
+                'status' => !$unitId ? 'ERROR' : (!empty($missingImages) ? 'WARNING' : 'OK'),
+            ];
+        }
+
+        return view('products.import-preview', [
+            'preview' => $preview,
+            'fatalErrors' => $fatalErrors,
+            'warnings' => $warnings,
+            // 🔑 PATH INI YANG DIPAKAI CONFIRM
+            'excelPath' => $excelPath,
+            'zipPath' => $zipPath,
+        ]);
+    }
+
+
+    public function importProcess(Request $request)
+    {
+        $request->validate([
+            'excel_path' => 'required|string',
+            'zip_path'   => 'required|string',
+        ]);
+
+        // 🔒 PAKAI STORAGE API (INI KUNCI)
+        $disk = \Storage::disk('local');
+
+        if (!$disk->exists($request->excel_path) || !$disk->exists($request->zip_path)) {
+            return redirect()
+                ->route('products.import.form')
+                ->with('error', 'File import tidak ditemukan. Silakan ulangi proses import.');
+        }
+
+        $excelFullPath = $disk->path($request->excel_path);
+        $zipFullPath   = $disk->path($request->zip_path);
+
+        DB::beginTransaction();
+
+        try {
+            /* ================= ZIP ================= */
+            $extractPath = storage_path('app/tmp-import/' . \Str::uuid());
+            mkdir($extractPath, 0777, true);
+
+            $zip = new \ZipArchive();
+            $status = $zip->open($zipFullPath, \ZipArchive::RDONLY);
+
+            if ($status !== true) {
+                throw new \Exception('Gagal membuka ZIP. Code: '.$status);
+            }
+
+            $zip->extractTo($extractPath);
+            $zip->close();
+
+            $fileIndex = $this->buildZipFileIndex($extractPath);
+
+            /* ================= EXCEL ================= */
+            $rows = \Maatwebsite\Excel\Facades\Excel::toArray([], $excelFullPath)[0];
+            $header = array_map('trim', array_shift($rows));
+
+            foreach ($rows as $i => $row) {
+                if (count(array_filter($row)) === 0) continue;
+
+                $data = array_combine($header, $row);
+
+                $unitId = $this->resolveUnitId($data['unit'] ?? null);
+
+                $product = \App\Models\Product::updateOrCreate(
+                    ['sku' => $data['product_sku']],
+                    [
+                        'name' => $data['product_name'],
+                        'short_description' => $data['short_description'] ?? null,
+                        'description' => $data['description'] ?? null,
+                        'weight_gram' => !empty($data['weight_gram']) ? (int)$data['weight_gram'] : null,
+//                        'attributes' => !empty($data['attributes_json'])
+//                            ? json_decode($data['attributes_json'], true)
+//                            : null,
+                        'is_active' => true,
+                        'unit_id' => $unitId,
+                    ]
+                );
+
+                $categoryIds = $this->resolveOrCreateCategoryIds($data['categories'] ?? null);
+
+                if (!empty($categoryIds)) {
+                    $product->categories()->sync($categoryIds);
+                }
+
+                $variant = \App\Models\ProductVariant::updateOrCreate(
+                    ['sku' => $data['variant_sku']],
+                    [
+                        'product_id' => $product->id,
+                        'variant_name' => $data['variant_name'],
+                        'price' => (int)$data['price'],
+                        'length' => $data['length'] ?? null,
+                        'width' => $data['width'] ?? null,
+                        'height' => $data['height'] ?? null,
+                        'is_active' => (bool)($data['is_active'] ?? 1),
+                        'is_sellable' => true,
+                        'unit_id' => $unitId,
+                    ]
+                );
+
+                if (!empty($data['product_images'])) {
+                    $this->importImagesFromIndex(
+                        explode('|', $data['product_images']),
+                        $fileIndex,
+                        $product->id,
+                        null
+                    );
+                }
+
+                if (!empty($data['variant_images'])) {
+                    $this->importImagesFromIndex(
+                        explode('|', $data['variant_images']),
+                        $fileIndex,
+                        $product->id,
+                        $variant->id
+                    );
+                }
+            }
+
+            DB::commit();
+
+            // 🧹 cleanup
+            $disk->delete([$request->excel_path, $request->zip_path]);
+
+            return redirect()
+                ->route('products.index')
+                ->with('success', 'Import produk berhasil');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Import failed', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->route('products.import.form')
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    private function previewCategories(?string $categories): array
+    {
+        if (!$categories) return [];
+
+        $names = array_values(array_filter(array_map(
+            fn($v) => trim($v),
+            explode('|', $categories)
+        )));
+
+        $result = [];
+
+        foreach ($names as $name) {
+            $exists = Category::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+                ->exists();
+
+            $result[] = [
+                'name' => $name,
+                'exists' => $exists, // false = akan di-create
+            ];
+        }
+
+        return $result;
+    }
+
+    private function buildZipFileIndex(string $extractPath): array
+    {
+        $map = [];
+
+        $rii = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($extractPath)
+        );
+
+        foreach ($rii as $file) {
+            if ($file->isDir()) continue;
+
+            $key = strtolower(trim($file->getFilename()));
+            $map[$key] = $file->getPathname();
+        }
+
+        return $map;
+    }
+
+    private function resolveUnitId(?string $unitName, bool $autoCreate = false): ?int
+    {
+        if (!$unitName) return null;
+
+        $unitName = trim($unitName);
+
+        $unit = Unit::whereRaw('LOWER(name) = ?', [strtolower($unitName)])->first();
+        if ($unit) return $unit->id;
+
+        if ($autoCreate) {
+            return Unit::create([
+                'code' => Str::slug($unitName),
+                'name' => $unitName
+            ])->id;
+        }
+
+        return null;
+    }
+
+    private function resolveOrCreateCategoryIds(?string $categories): array
+    {
+        if (!$categories) return [];
+
+        $names = array_values(array_filter(array_map(
+            fn($v) => trim($v),
+            explode('|', $categories)
+        )));
+
+        if (empty($names)) return [];
+
+        $ids = [];
+
+        foreach ($names as $name) {
+            // cari by name (case-insensitive), termasuk yang soft-deleted
+            $category = Category::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+                ->first();
+
+            if ($category) {
+                // kalau soft-deleted → revive
+                if ($category->deleted_at) {
+                    $category->restore();
+                }
+            } else {
+                // auto-create
+                $baseSlug = Str::slug($name);
+                $slug = $baseSlug;
+                $i = 1;
+
+                // pastikan slug unik
+                while (Category::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . $i++;
+                }
+
+                $category = Category::create([
+                    'name' => $name,
+                    'slug' => $slug,
+                    'parent_id' => null,
+                    'is_active' => true,
+                    'position' => 0,
+                ]);
+            }
+
+            $ids[] = $category->id;
+        }
+
+        return $ids;
+    }
+
+    private function resolveCategoryIds(?string $categories): array
+    {
+        if (!$categories) return [];
+
+        $names = array_filter(array_map('trim', explode('|', $categories)));
+
+        return \App\Models\Category::whereIn(
+            \DB::raw('LOWER(name)'),
+            array_map('strtolower', $names)
+        )->pluck('id')->toArray();
+    }
+
+    private function importImagesFromIndex(array $files, array $fileIndex, int $productId, ?int $variantId)
+    {
+        $isFirst = true;
+
+        foreach ($files as $pos => $filename) {
+            $key = strtolower(trim($filename));
+
+            if (!$key || !isset($fileIndex[$key])) {
+                continue; // skip missing image
+            }
+
+            $fullPath = $fileIndex[$key];
+
+            $uploaded = new \Illuminate\Http\UploadedFile(
+                $fullPath,
+                basename($fullPath),
+                null,
+                null,
+                true
+            );
+
+            $path = \App\Support\ImageUploader::uploadWebp(
+                $uploaded,
+                $variantId
+                    ? "products/{$productId}/variants/{$variantId}"
+                    : "products/{$productId}"
+            );
+
+            if ($isFirst) {
+                ProductImage::where('product_id', $productId)
+                    ->where('variant_id', $variantId)
+                    ->update(['is_main' => false]);
+            }
+
+            ProductImage::create([
+                'product_id' => $productId,
+                'variant_id' => $variantId,
+                'url' => $path,
+                'position' => $pos,
+                'is_main' => $isFirst,
+            ]);
+
+            $isFirst = false;
+        }
+    }
+
+    private function importImages(array $files, string $extractPath, int $productId, ?int $variantId)
+    {
+        $isFirst = true;
+
+        foreach ($files as $index => $filename) {
+            $filename = trim($filename);
+            if (!$filename) continue;
+
+            $fullPath = $extractPath.'/'.$filename;
+            if (!file_exists($fullPath)) continue;
+
+            $uploaded = new \Illuminate\Http\UploadedFile(
+                $fullPath,
+                $filename,
+                null,
+                null,
+                true
+            );
+
+            $path = ImageUploader::uploadWebp(
+                $uploaded,
+                $variantId
+                    ? "products/{$productId}/variants/{$variantId}"
+                    : "products/{$productId}"
+            );
+
+            if ($isFirst) {
+                ProductImage::where('product_id', $productId)
+                    ->where('variant_id', $variantId)
+                    ->update(['is_main' => false]);
+            }
+
+            ProductImage::create([
+                'product_id' => $productId,
+                'variant_id' => $variantId,
+                'url' => $path,
+                'position' => $index,
+                'is_main' => $isFirst
+            ]);
+
+            $isFirst = false;
+        }
+    }
+
+    public function downloadImportTemplate()
+    {
+        $path = 'import-templates/product_import_template.xlsx';
+
+        if (!Storage::disk('private')->exists($path)) {
+            abort(404, 'Template tidak ditemukan');
+        }
+
+        return Storage::disk('private')->download(
+            $path,
+            'product_import_template.xlsx'
+        );
+    }
+
+    public function downloadImportImagesExample()
+    {
+        $path = 'import-templates/product_images_example.zip';
+
+        if (!Storage::disk('private')->exists($path)) {
+            abort(404, 'Contoh ZIP gambar tidak ditemukan');
+        }
+
+        return Storage::disk('private')->download(
+            $path,
+            'product_images_example.zip'
+        );
+    }
+
 }

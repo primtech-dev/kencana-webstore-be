@@ -52,24 +52,42 @@ class OrderController extends Controller
 
             return datatables()->eloquent($query)
                 ->addIndexColumn()
+
+                // RELATION (non-sortable)
                 ->addColumn('customer', function (Order $o) {
                     return $o->customer ? e($o->customer->full_name) : '-';
                 })
                 ->addColumn('branch', function (Order $o) {
                     return $o->branch ? e($o->branch->name) : '-';
                 })
-                ->addColumn('total_amount', function (Order $o) {
+
+                // SORTABLE DB COLUMNS
+                ->editColumn('total_amount', function (Order $o) {
                     return number_format($o->total_amount, 0, ',', '.');
                 })
-                ->addColumn('status', function (Order $o) {
+                ->orderColumn('total_amount', function ($q, $order) {
+                    $q->orderBy('orders.total_amount', $order);
+                })
+
+                ->editColumn('status', function (Order $o) {
                     return ucfirst($o->status);
                 })
-                ->addColumn('created_at', function (Order $o) {
+                ->orderColumn('status', function ($q, $order) {
+                    $q->orderBy('orders.status', $order);
+                })
+
+                ->editColumn('created_at', function (Order $o) {
                     return $o->created_at ? $o->created_at->format('d M Y H:i') : '-';
                 })
+                ->orderColumn('created_at', function ($q, $order) {
+                    $q->orderBy('orders.created_at', $order);
+                })
+
+                // ACTION
                 ->addColumn('action', function (Order $o) {
                     return view('orders._column_action', ['order' => $o])->render();
                 })
+
                 ->rawColumns(['action'])
                 ->toJson();
         }

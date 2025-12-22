@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ReviewImage extends Model
 {
     use SoftDeletes;
+    protected $appends = ['url'];
 
     protected $fillable = ['review_id','image_path','position'];
 
@@ -18,6 +19,7 @@ class ReviewImage extends Model
 
     public function getUrlAttribute(): string
     {
-        return asset('storage/'.$this->image_path);
+        return rtrim(config('services.webstore.asset_url'), '/')
+            . '/' . ltrim($this->image_path, '/');
     }
 }
