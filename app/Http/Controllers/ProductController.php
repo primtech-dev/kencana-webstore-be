@@ -813,7 +813,6 @@ class ProductController extends Controller
         ]);
     }
 
-
     public function importProcess(Request $request)
     {
         $request->validate([
@@ -821,10 +820,13 @@ class ProductController extends Controller
             'zip_path'   => 'required|string',
         ]);
 
-        // 🔒 PAKAI STORAGE API (INI KUNCI)
+        // 🔒 STORAGE
         $disk = \Storage::disk('local');
 
-        if (!$disk->exists($request->excel_path) || !$disk->exists($request->zip_path)) {
+        if (
+            !$disk->exists($request->excel_path) ||
+            !$disk->exists($request->zip_path)
+        ) {
             return redirect()
                 ->route('products.import.form')
                 ->with('error', 'File import tidak ditemukan. Silakan ulangi proses import.');
@@ -844,7 +846,7 @@ class ProductController extends Controller
             $status = $zip->open($zipFullPath, \ZipArchive::RDONLY);
 
             if ($status !== true) {
-                throw new \Exception('Gagal membuka ZIP. Code: '.$status);
+                throw new \Exception('Gagal membuka ZIP. Code: ' . $status);
             }
 
             $zip->extractTo($extractPath);
@@ -853,52 +855,99 @@ class ProductController extends Controller
             $fileIndex = $this->buildZipFileIndex($extractPath);
 
             /* ================= EXCEL ================= */
-            $rows = \Maatwebsite\Excel\Facades\Excel::toArray([], $excelFullPath)[0];
+            $rows   = \Maatwebsite\Excel\Facades\Excel::toArray([], $excelFullPath)[0];
             $header = array_map('trim', array_shift($rows));
 
             foreach ($rows as $i => $row) {
-                if (count(array_filter($row)) === 0) continue;
+                if (count(array_filter($row)) === 0) {
+                    continue;
+                }
 
                 $data = array_combine($header, $row);
 
                 $unitId = $this->resolveUnitId($data['unit'] ?? null);
 
-                $product = \App\Models\Product::updateOrCreate(
-                    ['sku' => $data['product_sku']],
-                    [
-                        'name' => $data['product_name'],
+                /* =====================================================
+                 | PRODUCT (support soft delete restore)
+                 ===================================================== */
+                $product = \App\Models\Product::withTrashed()
+                    ->where('sku', $data['product_sku'])
+                    ->first();
+
+                if ($product) {
+                    if ($product->trashed()) {
+                        $product->restore(); // 🔄 restore soft delete
+                    }
+
+                    $product->update([
+                        'name'              => $data['product_name'],
                         'short_description' => $data['short_description'] ?? null,
-                        'description' => $data['description'] ?? null,
-                        'weight_gram' => !empty($data['weight_gram']) ? (int)$data['weight_gram'] : null,
-//                        'attributes' => !empty($data['attributes_json'])
-//                            ? json_decode($data['attributes_json'], true)
-//                            : null,
+                        'description'       => $data['description'] ?? null,
+                        'weight_gram'       => !empty($data['weight_gram'])
+                            ? (int) $data['weight_gram']
+                            : null,
                         'is_active' => true,
-                        'unit_id' => $unitId,
-                    ]
-                );
+                        'unit_id'   => $unitId,
+                    ]);
+                } else {
+                    $product = \App\Models\Product::create([
+                        'sku'               => $data['product_sku'],
+                        'name'              => $data['product_name'],
+                        'short_description' => $data['short_description'] ?? null,
+                        'description'       => $data['description'] ?? null,
+                        'weight_gram'       => !empty($data['weight_gram'])
+                            ? (int) $data['weight_gram']
+                            : null,
+                        'is_active' => true,
+                        'unit_id'   => $unitId,
+                    ]);
+                }
 
+                /* ================= CATEGORY ================= */
                 $categoryIds = $this->resolveOrCreateCategoryIds($data['categories'] ?? null);
-
                 if (!empty($categoryIds)) {
                     $product->categories()->sync($categoryIds);
                 }
 
-                $variant = \App\Models\ProductVariant::updateOrCreate(
-                    ['sku' => $data['variant_sku']],
-                    [
-                        'product_id' => $product->id,
-                        'variant_name' => $data['variant_name'],
-                        'price' => (int)$data['price'],
-                        'length' => $data['length'] ?? null,
-                        'width' => $data['width'] ?? null,
-                        'height' => $data['height'] ?? null,
-                        'is_active' => (bool)($data['is_active'] ?? 1),
-                        'is_sellable' => true,
-                        'unit_id' => $unitId,
-                    ]
-                );
+                /* =====================================================
+                 | VARIANT (support soft delete restore)
+                 ===================================================== */
+                $variant = \App\Models\ProductVariant::withTrashed()
+                    ->where('sku', $data['variant_sku'])
+                    ->first();
 
+                if ($variant) {
+                    if ($variant->trashed()) {
+                        $variant->restore(); // 🔄 restore soft delete
+                    }
+
+                    $variant->update([
+                        'product_id'  => $product->id,
+                        'variant_name'=> $data['variant_name'],
+                        'price'       => (int) $data['price'],
+                        'length'      => $data['length'] ?? null,
+                        'width'       => $data['width'] ?? null,
+                        'height'      => $data['height'] ?? null,
+                        'is_active'   => (bool) ($data['is_active'] ?? 1),
+                        'is_sellable' => true,
+                        'unit_id'     => $unitId,
+                    ]);
+                } else {
+                    $variant = \App\Models\ProductVariant::create([
+                        'sku'          => $data['variant_sku'],
+                        'product_id'   => $product->id,
+                        'variant_name' => $data['variant_name'],
+                        'price'        => (int) $data['price'],
+                        'length'       => $data['length'] ?? null,
+                        'width'        => $data['width'] ?? null,
+                        'height'       => $data['height'] ?? null,
+                        'is_active'    => (bool) ($data['is_active'] ?? 1),
+                        'is_sellable'  => true,
+                        'unit_id'      => $unitId,
+                    ]);
+                }
+
+                /* ================= IMAGES ================= */
                 if (!empty($data['product_images'])) {
                     $this->importImagesFromIndex(
                         explode('|', $data['product_images']),
@@ -921,7 +970,10 @@ class ProductController extends Controller
             DB::commit();
 
             // 🧹 cleanup
-            $disk->delete([$request->excel_path, $request->zip_path]);
+            $disk->delete([
+                $request->excel_path,
+                $request->zip_path,
+            ]);
 
             return redirect()
                 ->route('products.index')
