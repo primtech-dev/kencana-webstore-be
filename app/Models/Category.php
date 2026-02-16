@@ -11,7 +11,7 @@ class Category extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'slug', 'parent_id', 'position', 'is_active'
+        'name', 'slug', 'parent_id', 'position', 'is_active', 'banner_path', 'banner_alt', 'thumbnail'
     ];
 
     protected $casts = [
@@ -45,5 +45,19 @@ class Category extends Model
                 $category->slug = $slug;
             }
         });
+    }
+
+    public function getBannerUrlAttribute()
+    {
+        return $this->banner_path
+            ? asset('storage/' . $this->banner_path)
+            : null;
+    }
+
+    public function getThumbnailUrlAttribute()
+    {
+        return $this->thumbnail
+            ? asset('storage/' . $this->thumbnail)
+            : null;
     }
 }

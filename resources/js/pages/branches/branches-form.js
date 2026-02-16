@@ -9,7 +9,7 @@
  */
 
 import $ from 'jquery';
-import { initChoices } from '../../../utils/choices-helper';
+import { initChoices } from '../../utils/choices-helper';
 
 // Helper: show toast if available
 function toastError(msg) {

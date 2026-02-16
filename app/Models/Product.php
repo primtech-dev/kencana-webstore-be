@@ -10,7 +10,7 @@ class Product extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'sku','name','short_description','description','attributes','weight_gram','is_active'
+        'sku','name','short_description','description','attributes','weight_gram','is_active', 'unit_id'
     ];
 
     protected $casts = [
@@ -31,5 +31,10 @@ class Product extends Model
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'product_categories')->withTimestamps()->using(\App\Models\ProductCategory::class);
+    }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 }

@@ -6,6 +6,13 @@ use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\PermissionController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockReceiptController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeBannerController;
+use App\Http\Controllers\ReviewController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -17,13 +24,7 @@ use Illuminate\Support\Facades\Route;
 require __DIR__ . '/auth.php';
 
 Route::middleware(['auth'])->group(function () {
-
-    // ROOT → DASHBOARD
-    Route::get('/', function () {
-        return view('dashboard.dashboard');
-    })->name('dashboard');
-
-
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 Route::middleware(['auth'])->name('branches.')->prefix('branches')->group(function () {
@@ -96,6 +97,27 @@ Route::middleware(['auth'])->name('users.')->prefix('users')->group(function () 
     Route::get('/{id}', [UserController::class, 'show'])->name('show')->middleware('permission:users.view');
 });
 
+Route::middleware(['auth','permission:products.create'])
+    ->prefix('products/import')
+    ->name('products.import.')
+    ->group(function () {
+        Route::get('/', [ProductController::class, 'importForm'])->name('form');
+        Route::post('/preview', [ProductController::class, 'importPreview'])->name('preview');
+        Route::post('/confirm', [ProductController::class, 'importProcess'])->name('process');
+    });
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/products/import/template',
+        [ProductController::class, 'downloadImportTemplate']
+    )->name('products.import.template');
+
+    Route::get('/products/import/example-images',
+        [ProductController::class, 'downloadImportImagesExample']
+    )->name('products.import.images_example');
+
+});
+
 Route::middleware(['auth'])->name('products.')->prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index'])->name('index')->middleware('permission:products.view');
     Route::get('/create', [ProductController::class, 'create'])->name('create')->middleware('permission:products.create');
@@ -113,6 +135,85 @@ Route::middleware(['auth'])->name('products.')->prefix('products')->group(functi
     Route::post('/images/{id}/set-main', [ProductController::class, 'setMainImage'])->name('products.images.set_main');
     Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])->name('products.images.destroy'); // if not present
 });
+
+Route::middleware(['auth'])->name('stock_receipts.')->prefix('stock-receipts')->group(function () {
+    // Ajax helper to lookup variants
+    Route::get('/variant-search', [StockReceiptController::class, 'variantSearch'])->name('variant.search')->middleware('permission:stock_receipts.create');
+
+    Route::get('/', [StockReceiptController::class, 'index'])->name('index')->middleware('permission:stock_receipts.view');
+    Route::get('/create', [StockReceiptController::class, 'create'])->name('create')->middleware('permission:stock_receipts.create');
+    Route::post('/', [StockReceiptController::class, 'store'])->name('store')->middleware('permission:stock_receipts.create');
+    Route::get('/{id}', [StockReceiptController::class, 'show'])->name('show')->middleware('permission:stock_receipts.view');
+    Route::get('/{id}/edit', [StockReceiptController::class, 'edit'])->name('edit')->middleware('permission:stock_receipts.update');
+    Route::put('/{id}', [StockReceiptController::class, 'update'])->name('update')->middleware('permission:stock_receipts.update');
+    Route::delete('/{id}', [StockReceiptController::class, 'destroy'])->name('destroy')->middleware('permission:stock_receipts.delete');
+});
+
+Route::middleware(['auth'])->name('customers.')->prefix('customers')->group(function () {
+    Route::get('/', [CustomerController::class, 'index'])->name('index')->middleware('permission:customers.view');
+    Route::get('/{id}', [CustomerController::class, 'show'])->name('show')->middleware('permission:customers.view');
+    // toggle aktif / non-aktif via AJAX (PUT)
+    Route::put('/{id}/toggle-active', [CustomerController::class, 'toggleActive'])->name('toggleActive')->middleware('permission:customers.activate');
+});
+
+Route::middleware(['auth'])->name('units.')->prefix('units')->group(function () {
+    Route::get('/', [UnitController::class, 'index'])->name('index')->middleware('permission:units.view');
+    Route::get('/create', [UnitController::class, 'create'])->name('create')->middleware('permission:units.create');
+    Route::post('/', [UnitController::class, 'store'])->name('store')->middleware('permission:units.create');
+    Route::get('/{id}/edit', [UnitController::class, 'edit'])->name('edit')->middleware('permission:units.update');
+    Route::put('/{id}', [UnitController::class, 'update'])->name('update')->middleware('permission:units.update');
+    Route::delete('/{id}', [UnitController::class, 'destroy'])->name('destroy')->middleware('permission:units.delete');
+    Route::get('/{id}', [UnitController::class, 'show'])->name('show')->middleware('permission:units.view');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
+
+        // Orders management (backoffice)
+        Route::middleware('can:orders.view')->group(function () {
+            Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+            Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+            Route::get('orders/{id}/print', [OrderController::class, 'print'])
+                ->name('orders.print');
+        });
+
+        Route::middleware('can:orders.manage')->group(function () {
+            Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+            Route::delete('orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
+        });
+    });
+});
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+    Route::middleware('can:home_banners.view')->group(function () {
+        Route::get('home-banners', [HomeBannerController::class, 'index'])->name('home-banners.index');
+        Route::get('home-banners/create', [HomeBannerController::class, 'create'])->name('home-banners.create');
+        Route::get('home-banners/{id}/edit', [HomeBannerController::class, 'edit'])->name('home-banners.edit');
+    });
+
+    Route::middleware('can:home_banners.manage')->group(function () {
+        Route::post('home-banners', [HomeBannerController::class, 'store'])->name('home-banners.store');
+        Route::put('home-banners/{id}', [HomeBannerController::class, 'update'])->name('home-banners.update');
+        Route::delete('home-banners/{id}', [HomeBannerController::class, 'destroy'])->name('home-banners.destroy');
+    });
+});
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+    Route::middleware('can:reviews.view')->group(function () {
+        Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::get('reviews/{id}', [ReviewController::class, 'show'])->name('reviews.show');
+    });
+
+    Route::middleware('can:reviews.manage')->group(function () {
+        Route::patch('reviews/{id}/status', [ReviewController::class, 'updateStatus'])->name('reviews.update-status');
+        Route::delete('reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+        Route::delete('review-images/{id}', [ReviewController::class, 'destroyImage'])->name('review-images.destroy');
+    });
+
+});
+
 
 /*
 |--------------------------------------------------------------------------

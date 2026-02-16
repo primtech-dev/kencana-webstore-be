@@ -39,6 +39,7 @@ $(function() {
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'name', name: 'name' },
+            { data: 'thumbnail', name: 'thumbnail', orderable: false, searchable: false },
             { data: 'slug', name: 'slug' },
             { data: 'parent', name: 'parent', orderable: false, searchable: false },
             { data: 'position', name: 'position' },

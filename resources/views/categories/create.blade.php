@@ -18,7 +18,7 @@
         ]
     ])
 
-    <form action="{{ route('categories.store') }}" method="POST" id="categoryForm">
+    <form action="{{ route('categories.store') }}" method="POST" id="categoryForm" enctype="multipart/form-data">
         @csrf
 
         <div class="row">
@@ -63,6 +63,32 @@
                                    value="{{ old('position', $category->position ?? 0) }}" min="0">
                             @error('position')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             <small class="text-muted">Semakin kecil angkanya, semakin atas tampilannya.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Banner Kategori</label>
+                            <input type="file" name="banner" class="form-control @error('banner') is-invalid @enderror" accept="image/*">
+                            @error('banner')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <small class="text-muted">Rekomendasi ukuran: 1200×400 px (JPG / PNG)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Alt Text Banner</label>
+                            <input type="text" name="banner_alt" class="form-control"
+                                   value="{{ old('banner_alt', $category->banner_alt ?? '') }}">
+                            <small class="text-muted">Untuk SEO & accessibility</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Thumbnail Kategori</label>
+                            <input type="file"
+                                   name="thumbnail"
+                                   class="form-control @error('thumbnail') is-invalid @enderror"
+                                   accept="image/*">
+                            @error('thumbnail')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <small class="text-muted">
+                                Digunakan untuk icon / list kategori. Rekomendasi: 400×400 px. Max: 3 MB
+                            </small>
                         </div>
 
                     </div>

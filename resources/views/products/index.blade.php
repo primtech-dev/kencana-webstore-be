@@ -16,12 +16,19 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h5 class="card-title mb-0">Daftar Produk</h5>
+
                     @can('products.create')
-                        <a href="{{ route('products.create') }}" class="btn btn-primary">
-                            <i data-lucide="plus" class="me-1"></i> Tambah Produk
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('products.create') }}" class="btn btn-primary">
+                                <i data-lucide="plus" class="me-1"></i> Tambah Produk
+                            </a>
+
+                            <a href="{{ route('products.import.form') }}" class="btn btn-outline-primary">
+                                <i data-lucide="upload" class="me-1"></i> Import Excel
+                            </a>
+                        </div>
                     @endcan
                 </div>
                 <div class="card-body">
@@ -30,8 +37,9 @@
                         <tr>
                             <th width="5%">No</th>
                             <th>Nama</th>
+                            <th>Satuan</th>
                             <th>SKU</th>
-                            <th>Varian</th>
+                            <th>Jumlah Varian</th>
                             <th width="10%">Status</th>
                             <th width="12%">Created At</th>
                             <th width="12%" class="text-center">Aksi</th>

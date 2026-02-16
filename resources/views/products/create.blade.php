@@ -13,9 +13,12 @@
 @endsection
 
 @section('content')
+    <script>
+        console.log('products-form.js loaded @', new Date().toISOString());
+    </script>
     @include('layouts.shared.page-title', [
         'title' => $product->exists ? 'Edit Produk' : 'Tambah Produk',
-        'subTitle' => 'Wizard: detail → kategori → varian → gambar → publish',
+        'subTitle' => 'Produk: detail → kategori → varian → gambar → publish',
         'breadcrumbs' => [
             ['name' => 'Produk', 'url' => route('products.index')],
             ['name' => $product->exists ? 'Edit' : 'Tambah']
@@ -31,7 +34,7 @@
 
         <div class="card">
             <div class="card-header justify-content-between d-flex align-items-center">
-                <h5 class="card-title mb-0">Basic Wizard</h5>
+                <h5 class="card-title mb-0">Create Product</h5>
                 <span class="badge badge-soft-success badge-label fs-xxs py-1">Product</span>
             </div>
 
@@ -114,18 +117,58 @@
 
                                     <div class="mb-3">
                                         <label class="form-label">SKU <small class="text-muted">(opsional)</small></label>
-                                        <input type="text" name="sku" class="form-control" value="{{ old('sku', $product->sku) }}">
+                                        <input type="text" name="sku" class="form-control select2" value="{{ old('sku', $product->sku) }}">
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">Deskripsi Singkat</label>
-                                        <textarea name="short_description" rows="3" class="form-control">{{ old('short_description', $product->short_description) }}</textarea>
+                                        <label class="form-label">Satuan / Unit <small class="text-muted">(opsional)</small></label>
+                                        <select name="unit_id" id="unitSelect" class="form-select">
+                                            <option value="">— Pilih Satuan —</option>
+                                            @foreach($units ?? [] as $u)
+                                                <option value="{{ $u->id }}" {{ (string) old('unit_id', $product->unit_id ?? '') === (string) $u->id ? 'selected' : '' }}>
+                                                    {{ $u->code ? $u->code . ' • ' : '' }}{{ $u->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <small class="text-muted">Pilih satuan produk (mis. Pcs, Kg). Varian akan mengikuti satuan produk.</small>
+                                    </div>
+
+
+                                    {{--                                    <div class="mb-3">--}}
+{{--                                        <label class="form-label">Deskripsi Singkat</label>--}}
+{{--                                        <textarea name="short_description" rows="3" class="form-control">{{ old('short_description', $product->short_description) }}</textarea>--}}
+{{--                                    </div>--}}
+
+                                    <div class="mb-3">
+                                        <label for="short_description" class="form-label">
+                                            Deskripsi Singkat <span class="text-danger">*</span>
+                                        </label>
+                                        <textarea class="form-control @error('short_description') is-invalid @enderror"
+                                                  id="short_description"
+                                                  name="short_description"
+                                                  required>{{ old('short_description', $product->short_description) }}</textarea>
+                                        @error('short_description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">Deskripsi Lengkap</label>
-                                        <textarea name="description" rows="6" class="form-control">{{ old('description', $product->description) }}</textarea>
+                                        <label for="description" class="form-label">
+                                            Deskripsi Lengkap <span class="text-danger">*</span>
+                                        </label>
+                                        <textarea class="form-control @error('description') is-invalid @enderror"
+                                                  id="description"
+                                                  name="description"
+                                                  required>{{ old('description', $product->description) }}</textarea>
+                                        @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
+
+{{--                                    <div class="mb-3">--}}
+{{--                                        <label class="form-label">Deskripsi Lengkap</label>--}}
+{{--                                        <textarea name="description" rows="6" class="form-control">{{ old('description', $product->description) }}</textarea>--}}
+{{--                                    </div>--}}
 
                                     <div class="mb-3">
                                         <label class="form-label">Atribut (JSON)</label>
@@ -222,6 +265,7 @@
                                         <label class="form-label">Upload Gambar Produk (multiple)</label>
                                         <input type="file" id="productImagesInput" name="product_images[]" class="form-control" multiple accept="image/*" />
                                         <small class="text-muted">Selain gambar global, setiap varian juga punya field gambar di varian.</small>
+                                        <small class="text-muted">Maksimal ukuran gambar 3MB (JPG / PNG / WebP)</small>
                                     </div>
 
                                     <div id="imagePreview" class="d-flex flex-wrap gap-2">
@@ -245,23 +289,63 @@
                         </div>
 
                         <!-- Step 5: Publish -->
+                        <!-- Step 5: Publish (Review yang rapi & dinamis) -->
                         <div class="tab-pane fade" id="tabPublish">
                             <div class="row">
                                 <div class="col-lg-8">
                                     <h6>Review & Publish</h6>
-                                    <p class="small text-muted">Periksa kembali data sebelum menyimpan.</p>
-                                    <!-- show brief preview -->
-                                    <div class="mb-3">
-                                        <strong>Nama:</strong> <div>{{ old('name', $product->name) ?? '-' }}</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <strong>Kategori:</strong>
-                                        <div>
-                                            @foreach($product->categories ?? [] as $c)
-                                                <span class="badge bg-light text-dark me-1">{{ $c->name }}</span>
-                                            @endforeach
+                                    <p class="small text-muted">Periksa kembali data sebelum menyimpan. Informasi di bawah ini berasal dari form — pastikan sudah benar.</p>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Informasi Utama</h5>
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-3">Nama</dt>
+                                                <dd class="col-sm-9" id="review_name">-</dd>
+
+                                                <dt class="col-sm-3">SKU</dt>
+                                                <dd class="col-sm-9" id="review_sku">-</dd>
+
+                                                <dt class="col-sm-3">Satuan</dt>
+                                                <dd class="col-sm-9" id="review_unit">-</dd>
+
+                                                <dt class="col-sm-3">Kategori</dt>
+                                                <dd class="col-sm-9" id="review_categories">-</dd>
+
+                                                <dt class="col-sm-3">Berat (gram)</dt>
+                                                <dd class="col-sm-9" id="review_weight">-</dd>
+                                            </dl>
                                         </div>
                                     </div>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Deskripsi Singkat</h5>
+                                            <div id="review_short_description" class="small text-muted">-</div>
+                                            <hr>
+                                            <h5 class="mb-2">Deskripsi Lengkap</h5>
+                                            <div id="review_description" class="small text-muted">-</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Varian</h5>
+                                            <div id="review_variants">
+                                                <p class="text-muted small mb-0">Belum ada varian.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="mb-2">Preview Gambar</h5>
+                                            <div id="review_images" class="d-flex flex-wrap gap-2">
+                                                <p class="text-muted small mb-0">Belum ada gambar.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
 
                                 <div class="col-lg-4 d-flex flex-column justify-content-between">
@@ -273,6 +357,7 @@
                                 </div>
                             </div>
                         </div>
+
 
                     </div> <!-- tab-content -->
                 </div> <!-- ins-wizard -->

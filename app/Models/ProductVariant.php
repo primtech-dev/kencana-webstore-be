@@ -10,8 +10,7 @@ class ProductVariant extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'product_id','sku','variant_name','price_cents','retail_price_cents','cost_cents',
-        'length','width','height','is_active','is_sellable'
+        'product_id','sku','variant_name', 'length','width','height','is_active','is_sellable', 'price','unit_id'
     ];
 
     protected $casts = [
@@ -21,11 +20,22 @@ class ProductVariant extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(\App\Models\Product::class, 'product_id');
+    }
+
+    public function inventories()
+    {
+        return $this->hasMany(\App\Models\Inventory::class, 'variant_id');
     }
 
     public function images()
     {
-        return $this->hasMany(ProductImage::class, 'variant_id');
+        return $this->hasMany(\App\Models\ProductImage::class, 'variant_id');
+        // jika model gambar kamu bernama ProductImage dan kolomnya variant_id, ganti class di atas.
+    }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 }
