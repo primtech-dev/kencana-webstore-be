@@ -10,7 +10,7 @@ class Product extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'sku','name','short_description','description','attributes','weight_gram','is_active', 'unit_id'
+        'sku','name','short_description','description','meta_keyword','attributes','weight_gram','is_active', 'unit_id'
     ];
 
     protected $casts = [

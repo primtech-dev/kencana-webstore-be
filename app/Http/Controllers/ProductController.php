@@ -90,6 +90,7 @@ class ProductController extends Controller
                 'name' => $validated['name'],
                 'short_description' => $validated['short_description'] ?? null,
                 'description' => $validated['description'] ?? null,
+                'meta_keyword' => $validated['meta_keyword'] ?? null,
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? true) : true,
@@ -304,6 +305,7 @@ class ProductController extends Controller
                 'name' => $validated['name'],
                 'short_description' => $validated['short_description'] ?? null,
                 'description' => $validated['description'] ?? null,
+                'meta_keyword' => $validated['meta_keyword'] ?? null,
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? false) : false,
@@ -537,6 +539,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
+            'meta_keyword' => 'nullable|string',
             'attributes' => 'nullable|array',
             'weight_gram' => 'nullable|integer',
             'is_active' => 'sometimes|boolean',
@@ -579,7 +582,7 @@ class ProductController extends Controller
     protected function prepareValidated(Request $request): array
     {
         $validated = $request->only([
-            'sku','name','short_description','description','weight_gram','is_active','categories','variants', 'unit_id'
+            'sku','name','short_description','description','meta_keyword','weight_gram','is_active','categories','variants', 'unit_id'
         ]);
 
         // normalize attributes
