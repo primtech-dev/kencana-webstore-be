@@ -171,6 +171,19 @@
 {{--                                    </div>--}}
 
                                     <div class="mb-3">
+                                        <label for="meta_keyword" class="form-label">Meta Keyword</label>
+                                        <input type="text"
+                                               class="form-control @error('meta_keyword') is-invalid @enderror"
+                                               id="meta_keyword"
+                                               name="meta_keyword"
+                                               value="{{ old('meta_keyword', $product->meta_keyword) }}">
+                                        <small class="text-muted">Pisahkan dengan koma, mis: Galvalum, Atap Metal, Atap Baja Ringan, Genteng Metal</small>
+                                        @error('meta_keyword')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="mb-3">
                                         <label class="form-label">Atribut (JSON)</label>
                                         <textarea name="attributes_json" rows="3" class="form-control">{{ old('attributes_json', json_encode($product->attributes ?? [])) }}</textarea>
                                         <small class="text-muted">Contoh: {"material":"kain","warna":"putih"}</small>
