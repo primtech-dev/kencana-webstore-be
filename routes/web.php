@@ -75,6 +75,7 @@ Route::middleware(['auth'])->name('meta_keywords.')->prefix('meta-keywords')->gr
     Route::get('/export', [MetaKeywordController::class, 'export'])->name('export')->middleware('permission:meta_keywords.view');
     Route::get('/import', [MetaKeywordController::class, 'importForm'])->name('import.form')->middleware('permission:meta_keywords.create');
     Route::post('/import', [MetaKeywordController::class, 'import'])->name('import.process')->middleware('permission:meta_keywords.create');
+    Route::get('/import/template', [MetaKeywordController::class, 'downloadImportTemplate'])->name('import.template')->middleware('permission:meta_keywords.create');
     Route::get('/search', [MetaKeywordController::class, 'search'])->name('search');
     Route::get('/{id}/edit', [MetaKeywordController::class, 'edit'])->name('edit')->middleware('permission:meta_keywords.update');
     Route::put('/{id}', [MetaKeywordController::class, 'update'])->name('update')->middleware('permission:meta_keywords.update');
