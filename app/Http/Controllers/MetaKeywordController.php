@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MetaKeywordImportTemplateExport;
 use App\Exports\MetaKeywordsExport;
 use App\Models\MetaKeyword;
 use Illuminate\Http\Request;
@@ -129,6 +130,11 @@ class MetaKeywordController extends Controller
     public function importForm()
     {
         return view('meta-keywords.import');
+    }
+
+    public function downloadImportTemplate()
+    {
+        return Excel::download(new MetaKeywordImportTemplateExport(), 'meta_keyword_import_template.xlsx');
     }
 
     public function import(Request $request)

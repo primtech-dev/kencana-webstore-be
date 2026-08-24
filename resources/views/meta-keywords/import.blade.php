@@ -16,6 +16,16 @@
         </div>
         <div class="card-body">
 
+            <div class="card mb-3">
+                <div class="card-body d-flex flex-wrap gap-2">
+                    <a href="{{ route('meta_keywords.import.template') }}"
+                       class="btn btn-outline-primary">
+                        <i data-lucide="download" class="me-1"></i>
+                        Download Template Excel
+                    </a>
+                </div>
+            </div>
+
             <div class="alert alert-info mt-2 mb-4">
                 <ul class="mb-0">
                     <li>File Excel harus punya kolom header <strong>name</strong> berisi nama meta keyword (satu keyword per baris)</li>
