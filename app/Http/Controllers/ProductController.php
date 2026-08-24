@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\MetaKeyword;
 use App\Models\ProductVariant;
 use App\Models\ProductImage;
 use App\Models\Unit;
@@ -90,7 +91,6 @@ class ProductController extends Controller
                 'name' => $validated['name'],
                 'short_description' => $validated['short_description'] ?? null,
                 'description' => $validated['description'] ?? null,
-                'meta_keyword' => $validated['meta_keyword'] ?? null,
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? true) : true,
@@ -101,6 +101,9 @@ class ProductController extends Controller
             if (!empty($validated['categories']) && is_array($validated['categories'])) {
                 $product->categories()->sync($validated['categories']);
             }
+
+            // 2b) meta keywords pivot (may include ids of existing keywords and/or newly typed names)
+            $product->metaKeywords()->sync($this->resolveOrCreateMetaKeywordIds($request->input('meta_keywords', [])));
 
             // 3) create variants and record mapping (form index => variant id)
             $variantIndexToId = [];
@@ -280,7 +283,7 @@ class ProductController extends Controller
 
     public function edit(int $id)
     {
-        $product = Product::with(['variants.images','images','categories'])->findOrFail($id);
+        $product = Product::with(['variants.images','images','categories','metaKeywords'])->findOrFail($id);
         $categories = Category::orderBy('name')->get();
         $units = Unit::orderBy('name')->get();
         return view('products.create', compact('product','categories','units'));
@@ -305,7 +308,6 @@ class ProductController extends Controller
                 'name' => $validated['name'],
                 'short_description' => $validated['short_description'] ?? null,
                 'description' => $validated['description'] ?? null,
-                'meta_keyword' => $validated['meta_keyword'] ?? null,
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? false) : false,
@@ -314,6 +316,9 @@ class ProductController extends Controller
 
             // 2) sync categories
             $product->categories()->sync($validated['categories'] ?? []);
+
+            // 2b) sync meta keywords (may include ids of existing keywords and/or newly typed names)
+            $product->metaKeywords()->sync($this->resolveOrCreateMetaKeywordIds($request->input('meta_keywords', [])));
 
             // 3) update existing variants and create new ones; collect incoming ids
             $incomingVariants = $validated['variants'] ?? [];
@@ -539,12 +544,13 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
-            'meta_keyword' => 'nullable|string',
             'attributes' => 'nullable|array',
             'weight_gram' => 'nullable|integer',
             'is_active' => 'sometimes|boolean',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
+            'meta_keywords' => 'nullable|array',
+            'meta_keywords.*' => 'string',
             'unit_id' => 'nullable',
             'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:3072',
             'variants' => 'nullable|array',
@@ -582,7 +588,7 @@ class ProductController extends Controller
     protected function prepareValidated(Request $request): array
     {
         $validated = $request->only([
-            'sku','name','short_description','description','meta_keyword','weight_gram','is_active','categories','variants', 'unit_id'
+            'sku','name','short_description','description','weight_gram','is_active','categories','variants', 'unit_id'
         ]);
 
         // normalize attributes
@@ -637,7 +643,7 @@ class ProductController extends Controller
 
     public function show(int $id)
     {
-        $product = Product::with(['variants.images','images','categories'])->findOrFail($id);
+        $product = Product::with(['variants.images','images','categories','metaKeywords'])->findOrFail($id);
         return view('products.show', compact('product'));
     }
 
@@ -779,6 +785,14 @@ class ProductController extends Controller
                 $warnings[] = "Baris {$rowNum}: terdapat kategori baru yang akan dibuat otomatis";
             }
 
+            $metaKeywordPreview = $this->previewMetaKeywords($data['meta_keyword'] ?? null);
+
+            $hasNewMetaKeyword = collect($metaKeywordPreview)->contains(fn($m) => $m['exists'] === false);
+
+            if ($hasNewMetaKeyword) {
+                $warnings[] = "Baris {$rowNum}: terdapat meta keyword baru yang akan dibuat otomatis";
+            }
+
             // IMAGE CHECK (WARNING)
             $missingImages = [];
             foreach (['product_images', 'variant_images'] as $col) {
@@ -802,6 +816,7 @@ class ProductController extends Controller
                 'variant' => $data['variant_name'] ?? '-',
                 'unit' => $data['unit'] ?? '-',
                 'categories' => $categoryPreview,
+                'meta_keywords' => $metaKeywordPreview,
                 'status' => !$unitId ? 'ERROR' : (!empty($missingImages) ? 'WARNING' : 'OK'),
             ];
         }
@@ -912,6 +927,12 @@ class ProductController extends Controller
                     $product->categories()->sync($categoryIds);
                 }
 
+                /* ================= META KEYWORD ================= */
+                $metaKeywordIds = $this->resolveOrCreateMetaKeywordIdsFromCsv($data['meta_keyword'] ?? null);
+                if (!empty($metaKeywordIds)) {
+                    $product->metaKeywords()->sync($metaKeywordIds);
+                }
+
                 /* =====================================================
                  | VARIANT (support soft delete restore)
                  ===================================================== */
@@ -1018,6 +1039,100 @@ class ProductController extends Controller
         }
 
         return $result;
+    }
+
+    private function previewMetaKeywords(?string $metaKeywords): array
+    {
+        if (!$metaKeywords) return [];
+
+        $names = array_values(array_filter(array_map(
+            fn($v) => trim($v),
+            explode(',', $metaKeywords)
+        )));
+
+        $result = [];
+
+        foreach ($names as $name) {
+            $exists = MetaKeyword::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+                ->exists();
+
+            $result[] = [
+                'name' => $name,
+                'exists' => $exists, // false = akan di-create
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Resolve mixed input from the product form's Select2 (existing meta_keyword ids
+     * and/or freshly-typed new keyword names) into a flat list of MetaKeyword ids.
+     */
+    private function resolveOrCreateMetaKeywordIds(array $values): array
+    {
+        $ids = [];
+
+        foreach ($values as $value) {
+            $value = trim((string) $value);
+            if ($value === '') continue;
+
+            if (ctype_digit($value) && MetaKeyword::where('id', $value)->exists()) {
+                $ids[] = (int) $value;
+                continue;
+            }
+
+            $ids[] = $this->findOrCreateMetaKeywordByName($value)->id;
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * Resolve a comma-separated list of meta keyword names (from the product Excel
+     * import's `meta_keyword` column) into a flat list of MetaKeyword ids.
+     */
+    private function resolveOrCreateMetaKeywordIdsFromCsv(?string $metaKeywords): array
+    {
+        if (!$metaKeywords) return [];
+
+        $names = array_values(array_filter(array_map(
+            fn($v) => trim($v),
+            explode(',', $metaKeywords)
+        )));
+
+        return array_values(array_unique(array_map(
+            fn($name) => $this->findOrCreateMetaKeywordByName($name)->id,
+            $names
+        )));
+    }
+
+    private function findOrCreateMetaKeywordByName(string $name): MetaKeyword
+    {
+        $metaKeyword = MetaKeyword::withTrashed()
+            ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+            ->first();
+
+        if ($metaKeyword) {
+            if ($metaKeyword->deleted_at) {
+                $metaKeyword->restore();
+            }
+            return $metaKeyword;
+        }
+
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+        $i = 1;
+        while (MetaKeyword::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $i++;
+        }
+
+        return MetaKeyword::create([
+            'name' => $name,
+            'slug' => $slug,
+            'is_active' => true,
+        ]);
     }
 
     private function buildZipFileIndex(string $extractPath): array

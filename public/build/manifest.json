@@ -687,6 +687,34 @@
       "_isObjectLike-mqpIr8Ea.js"
     ]
   },
+  "resources/js/pages/meta-keywords/meta-keywords-form.js": {
+    "file": "assets/meta-keywords-form-B7QUlUbU.js",
+    "name": "meta-keywords-form",
+    "src": "resources/js/pages/meta-keywords/meta-keywords-form.js",
+    "isEntry": true,
+    "imports": [
+      "_jquery-DxCMfk7S.js",
+      "__commonjsHelpers-D6-XlEtG.js",
+      "_jquery-BQXThELV.js"
+    ]
+  },
+  "resources/js/pages/meta-keywords/meta-keywords.js": {
+    "file": "assets/meta-keywords-Bul5uQex.js",
+    "name": "meta-keywords",
+    "src": "resources/js/pages/meta-keywords/meta-keywords.js",
+    "isEntry": true,
+    "imports": [
+      "_jquery-DxCMfk7S.js",
+      "_dataTables.bootstrap5-SLVZVhPx.js",
+      "_responsive.bootstrap5-CO5iH43l.js",
+      "_delete-modal-helper-Dt6JVILi.js",
+      "_tooltip-helper-B_gzMSQw.js",
+      "__commonjsHelpers-D6-XlEtG.js",
+      "_jquery-BQXThELV.js",
+      "_bootstrap-BTbS0qBz.js",
+      "_index-BEKk9TLb.js"
+    ]
+  },
   "resources/js/pages/misc-clipboard.js": {
     "file": "assets/misc-clipboard-BI6pkYsO.js",
     "name": "misc-clipboard",
@@ -752,7 +780,7 @@
     ]
   },
   "resources/js/pages/products/products-form.js": {
-    "file": "assets/products-form-z4VzC6r1.js",
+    "file": "assets/products-form-BpbV2_Pm.js",
     "name": "products-form",
     "src": "resources/js/pages/products/products-form.js",
     "isEntry": true,

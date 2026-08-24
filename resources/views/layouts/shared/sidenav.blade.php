@@ -46,6 +46,14 @@
                 </a>
             </li>
 
+            @can('meta_keywords.view')
+                <li class="side-nav-item">
+                    <a href="{{route('meta_keywords.index')}}" class="side-nav-link">
+                        <span class="menu-icon"><i data-lucide="hash"></i></span>
+                        <span class="menu-text">Meta Keyword</span>
+                    </a>
+                </li>
+            @endcan
 
             <li class="side-nav-item">
                 <a href="{{ route('units.index') }}" class="side-nav-link">

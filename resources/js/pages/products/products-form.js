@@ -24,10 +24,24 @@ function toastSuccess(msg) {
     console.log('Toast success:', msg);
 }
 
-/** Load external script once (returns Promise) */
+/**
+ * Load external script once (returns Promise). Concurrent calls for the same
+ * src share a single in-flight promise, so callers that fire back-to-back
+ * (e.g. multiple initSelect2* calls on page load) all wait for the actual
+ * script execution instead of resolving early just because a <script> tag
+ * with that src already exists in the DOM.
+ */
+const _scriptLoadPromises = {};
 function loadScript(src) {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) return resolve();
+    if (_scriptLoadPromises[src]) return _scriptLoadPromises[src];
+
+    _scriptLoadPromises[src] = new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+            existing.addEventListener('load', () => resolve());
+            existing.addEventListener('error', () => reject(new Error('Failed to load ' + src)));
+            return;
+        }
         const s = document.createElement('script');
         s.src = src;
         s.async = true;
@@ -35,6 +49,8 @@ function loadScript(src) {
         s.onerror = () => reject(new Error('Failed to load ' + src));
         document.head.appendChild(s);
     });
+
+    return _scriptLoadPromises[src];
 }
 
 /** Initialize Select2 on selector (dynamic load if needed) */
@@ -54,6 +70,41 @@ async function initSelect2(selector = '#categoriesSelect') {
         }
     } catch (err) {
         console.warn('Select2 init failed:', err);
+    }
+}
+
+/**
+ * Initialize Select2 with AJAX search + inline "create new tag" for Meta Keyword.
+ * Typing a keyword that doesn't match any option lets the user create it as a
+ * new tag (submitted as free text; the server finds-or-creates it by name).
+ */
+async function initSelect2Tags(selector = '#metaKeywordsSelect') {
+    try {
+        if (!document.querySelector(selector)) return;
+        if (typeof $().select2 !== 'function') {
+            await loadScript('https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js');
+        }
+        if (typeof $().select2 !== 'function') return;
+
+        const ajaxUrl = window.metaKeywordSearchUrl;
+
+        $(selector).select2({
+            placeholder: 'Pilih atau ketik meta keyword baru...',
+            width: '100%',
+            allowClear: true,
+            tags: true,
+            tokenSeparators: [','],
+            minimumInputLength: 0,
+            ajax: ajaxUrl ? {
+                url: ajaxUrl,
+                dataType: 'json',
+                delay: 250,
+                data: params => ({ q: params.term || '' }),
+                processResults: data => ({ results: (data && data.results) ? data.results : [] })
+            } : undefined
+        });
+    } catch (err) {
+        console.warn('Select2 (tags) init failed:', err);
     }
 }
 
@@ -342,6 +393,7 @@ $(function() {
     setupWizardNavigation();
     initSelect2('#categoriesSelect');
     initSelect2('#unitSelect');
+    initSelect2Tags('#metaKeywordsSelect');
     bindVariantControls();
     setupImagePreview('#productImagesInput', '#imagePreview');
     bindDeleteImageAjax();
@@ -445,6 +497,14 @@ $(function() {
             if (selected.length) categoriesText = selected.map(s => `<span class="badge bg-light text-dark me-1">${escapeHtml(s)}</span>`).join(' ');
         }
 
+        // meta keywords: same treatment as categories
+        let metaKeywordsText = '-';
+        const $mk = $('#metaKeywordsSelect');
+        if ($mk.length) {
+            const selected = $mk.find('option:selected').map(function(){ return $(this).text().trim(); }).get();
+            if (selected.length) metaKeywordsText = selected.map(s => `<span class="badge bg-light text-dark me-1">${escapeHtml(s)}</span>`).join(' ');
+        }
+
         // descriptions: prefer Quill content if available
         const shortDescHtml = (typeof editorShortDesc !== 'undefined' && editorShortDesc) ? getQuillContent(editorShortDesc) : ($('#short_description').val() || '');
         const descHtml = (typeof editorDesc !== 'undefined' && editorDesc) ? getQuillContent(editorDesc) : ($('#description').val() || '');
@@ -454,6 +514,7 @@ $(function() {
         $('#review_sku').html(escapeHtml(sku) || '-');
         $('#review_unit').html(escapeHtml(unitText) || '-');
         $('#review_categories').html(categoriesText);
+        $('#review_meta_keywords').html(metaKeywordsText);
         $('#review_weight').html(escapeHtml(weight) !== '' ? escapeHtml(weight + ' gr') : '-');
 
         $('#review_short_description').html(shortDescHtml ? shortDescHtml : '<span class="text-muted small">-</span>');
@@ -497,7 +558,7 @@ $(function() {
             debounceTimer = setTimeout(renderProductReview, 250);
         }
 
-        $(document).on('input change', 'input[name="name"], input[name="sku"], input[name="weight_gram"], #unitSelect, #categoriesSelect', debounceRender);
+        $(document).on('input change', 'input[name="name"], input[name="sku"], input[name="weight_gram"], #unitSelect, #categoriesSelect, #metaKeywordsSelect', debounceRender);
 
         // re-render when variants change (add/remove or input inside variants)
         $(document).on('input change', '#variantsContainer', debounceRender);
