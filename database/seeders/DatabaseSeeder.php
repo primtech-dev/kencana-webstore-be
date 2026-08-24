@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             BranchesPermissionSeeder::class,
             CategoryPermissionSeeder::class,
             CustomerPermissionSeeder::class,
+            MetaKeywordPermissionSeeder::class,
             OrdersPermissionSeeder::class,
             PaymentMethodSeeder::class,
             PermissionProductSeeder::class,

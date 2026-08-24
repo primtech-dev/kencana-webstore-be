@@ -44,6 +44,7 @@
                     <th>Row</th>
                     <th>Produk</th>
                     <th>Kategori</th>
+                    <th>Meta Keyword</th>
                     <th>Varian</th>
                     <th>Unit</th>
                     <th>Status</th>
@@ -64,6 +65,23 @@
                                                             @else
                                                                 <span class="badge bg-info me-1">
                                             {{ $cat['name'] }} (new)
+                                        </span>
+                                    @endif
+                                @endforeach
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if(!empty($p['meta_keywords']))
+                                @foreach($p['meta_keywords'] as $mk)
+                                    @if($mk['exists'])
+                                        <span class="badge bg-success me-1">
+                                            {{ $mk['name'] }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-info me-1">
+                                            {{ $mk['name'] }} (new)
                                         </span>
                                     @endif
                                 @endforeach

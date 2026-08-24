@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\MetaKeywordController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\PermissionController;
 use App\Http\Controllers\Users\UserController;
@@ -65,6 +66,19 @@ Route::middleware(['auth'])->name('categories.')->prefix('categories')->group(fu
     Route::put('/{id}', [CategoryController::class, 'update'])->name('update')->middleware('permission:categories.update');
     Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy')->middleware('permission:categories.delete');
     Route::get('/{id}', [CategoryController::class, 'show'])->name('show')->middleware('permission:categories.view');
+});
+
+Route::middleware(['auth'])->name('meta_keywords.')->prefix('meta-keywords')->group(function () {
+    Route::get('/', [MetaKeywordController::class, 'index'])->name('index')->middleware('permission:meta_keywords.view');
+    Route::get('/create', [MetaKeywordController::class, 'create'])->name('create')->middleware('permission:meta_keywords.create');
+    Route::post('/', [MetaKeywordController::class, 'store'])->name('store')->middleware('permission:meta_keywords.create');
+    Route::get('/export', [MetaKeywordController::class, 'export'])->name('export')->middleware('permission:meta_keywords.view');
+    Route::get('/import', [MetaKeywordController::class, 'importForm'])->name('import.form')->middleware('permission:meta_keywords.create');
+    Route::post('/import', [MetaKeywordController::class, 'import'])->name('import.process')->middleware('permission:meta_keywords.create');
+    Route::get('/search', [MetaKeywordController::class, 'search'])->name('search');
+    Route::get('/{id}/edit', [MetaKeywordController::class, 'edit'])->name('edit')->middleware('permission:meta_keywords.update');
+    Route::put('/{id}', [MetaKeywordController::class, 'update'])->name('update')->middleware('permission:meta_keywords.update');
+    Route::delete('/{id}', [MetaKeywordController::class, 'destroy'])->name('destroy')->middleware('permission:meta_keywords.delete');
 });
 
 Route::middleware(['auth'])->name('roles.')->prefix('roles')->group(function () {

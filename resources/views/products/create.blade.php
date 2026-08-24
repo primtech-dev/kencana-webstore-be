@@ -171,15 +171,27 @@
 {{--                                    </div>--}}
 
                                     <div class="mb-3">
-                                        <label for="meta_keyword" class="form-label">Meta Keyword</label>
-                                        <input type="text"
-                                               class="form-control @error('meta_keyword') is-invalid @enderror"
-                                               id="meta_keyword"
-                                               name="meta_keyword"
-                                               value="{{ old('meta_keyword', $product->meta_keyword) }}">
-                                        <small class="text-muted">Pisahkan dengan koma, mis: Galvalum, Atap Metal, Atap Baja Ringan, Genteng Metal</small>
-                                        @error('meta_keyword')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <label for="metaKeywordsSelect" class="form-label">Meta Keyword</label>
+                                        <select name="meta_keywords[]" id="metaKeywordsSelect" class="form-select @error('meta_keywords') is-invalid @enderror" multiple>
+                                            @php
+                                                $oldMetaKeywords = old('meta_keywords');
+                                                if (is_null($oldMetaKeywords)) {
+                                                    $selectedMetaKeywords = $product->exists
+                                                        ? $product->metaKeywords->pluck('name', 'id')->toArray()
+                                                        : [];
+                                                } else {
+                                                    // best-effort redisplay after a failed submit: reuse the raw
+                                                    // value as both id and label (may include freshly-typed names)
+                                                    $selectedMetaKeywords = array_combine($oldMetaKeywords, $oldMetaKeywords);
+                                                }
+                                            @endphp
+                                            @foreach($selectedMetaKeywords as $mkId => $mkLabel)
+                                                <option value="{{ $mkId }}" selected>{{ $mkLabel }}</option>
+                                            @endforeach
+                                        </select>
+                                        <small class="text-muted">Cari meta keyword yang sudah ada, atau ketik lalu Enter untuk membuat baru.</small>
+                                        @error('meta_keywords')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
                                     </div>
 
@@ -325,6 +337,9 @@
                                                 <dt class="col-sm-3">Kategori</dt>
                                                 <dd class="col-sm-9" id="review_categories">-</dd>
 
+                                                <dt class="col-sm-3">Meta Keyword</dt>
+                                                <dd class="col-sm-9" id="review_meta_keywords">-</dd>
+
                                                 <dt class="col-sm-3">Berat (gram)</dt>
                                                 <dd class="col-sm-9" id="review_weight">-</dd>
                                             </dl>
@@ -381,6 +396,10 @@
 
 @section('scripts')
     @vite(['resources/js/pages/products/products-form.js'])
+
+    <script>
+        window.metaKeywordSearchUrl = "{{ route('meta_keywords.search') }}";
+    </script>
 
     @if($errors->any())
         <script>window.serverValidationErrors = {!! json_encode($errors->all()) !!};</script>
