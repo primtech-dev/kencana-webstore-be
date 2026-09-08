@@ -168,6 +168,15 @@
                                 Satuan: <strong>{{ $product->unit ? ($product->unit->code ? $product->unit->code.' • ' : '') . $product->unit->name : '-' }}</strong>
                             </div>
 
+                            <div class="meta mb-2">
+                                Metode Pembelian:
+                                @if($product->purchase_type === 'manual')
+                                    <span class="badge bg-warning text-dark">Manual (via WhatsApp)</span>
+                                @else
+                                    <span class="badge bg-success">Checkout Online</span>
+                                @endif
+                            </div>
+
                             <div class="mb-2">
                                 <strong>Kategori:</strong>
                                 @if($product->categories && $product->categories->count())

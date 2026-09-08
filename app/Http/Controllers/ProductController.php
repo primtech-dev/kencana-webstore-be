@@ -30,7 +30,7 @@ class ProductController extends Controller
     {
         if ($request->ajax()) {
             // eager load unit & categories (ambil kolom penting saja)
-            $query = Product::select(['id','sku','name','is_active','created_at','unit_id'])
+            $query = Product::select(['id','sku','name','is_active','purchase_type','created_at','unit_id'])
                 ->withCount('variants')
                 ->with(['unit' => function($q){
                     $q->select('id','code','name');
@@ -72,12 +72,17 @@ class ProductController extends Controller
                     return $subs->map(fn($c) => '<span class="badge bg-light text-dark me-1">'.e($c->name).'</span>')->implode('');
                 })
                 ->addColumn('variants_count', fn($p) => $p->variants_count)
+                ->addColumn('purchase_type', function (Product $p) {
+                    return $p->purchase_type === Product::PURCHASE_TYPE_MANUAL
+                        ? '<span class="badge bg-warning text-dark">Manual</span>'
+                        : '<span class="badge bg-success">Online</span>';
+                })
                 ->addColumn('is_active', fn(Product $p) => $p->is_active ? 'Aktif' : 'Non-aktif')
                 ->addColumn('created_at', fn($p) => $p->created_at ? $p->created_at->format('d M Y H:i') : '-')
                 ->addColumn('action', function (Product $p) {
                     return view('products._column_action', ['p'=>$p])->render();
                 })
-                ->rawColumns(['action', 'categories', 'sub_categories'])
+                ->rawColumns(['action', 'categories', 'sub_categories', 'purchase_type'])
                 ->toJson();
         }
 
@@ -116,7 +121,8 @@ class ProductController extends Controller
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? true) : true,
-                'unit_id' => $validated['unit_id'] ?? null
+                'unit_id' => $validated['unit_id'] ?? null,
+                'purchase_type' => $validated['purchase_type'] ?? Product::PURCHASE_TYPE_ONLINE,
             ]);
 
             // 2) categories pivot (kategori utama + sub kategori digabung dalam satu pivot)
@@ -338,7 +344,8 @@ class ProductController extends Controller
                 'attributes' => $validated['attributes'] ?? null,
                 'weight_gram' => $validated['weight_gram'] ?? null,
                 'is_active' => $request->has('is_active') ? (bool) ($validated['is_active'] ?? false) : false,
-                'unit_id' => $validated['unit_id'] ?? null
+                'unit_id' => $validated['unit_id'] ?? null,
+                'purchase_type' => $validated['purchase_type'] ?? Product::PURCHASE_TYPE_ONLINE,
             ]);
 
             // 2) sync categories (kategori utama + sub kategori digabung dalam satu pivot)
@@ -578,6 +585,7 @@ class ProductController extends Controller
             'attributes' => 'nullable|array',
             'weight_gram' => 'nullable|integer',
             'is_active' => 'sometimes|boolean',
+            'purchase_type' => ['nullable', Rule::in(Product::PURCHASE_TYPES)],
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
             'sub_categories' => 'nullable|array',
@@ -631,7 +639,7 @@ class ProductController extends Controller
     protected function prepareValidated(Request $request): array
     {
         $validated = $request->only([
-            'sku','name','short_description','description','weight_gram','is_active','categories','sub_categories','variants', 'unit_id'
+            'sku','name','short_description','description','weight_gram','is_active','purchase_type','categories','sub_categories','variants', 'unit_id'
         ]);
 
         // normalize attributes

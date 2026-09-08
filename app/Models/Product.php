@@ -9,8 +9,16 @@ class Product extends Model
 {
     use SoftDeletes;
 
+    public const PURCHASE_TYPE_ONLINE = 'online';
+    public const PURCHASE_TYPE_MANUAL = 'manual';
+
+    public const PURCHASE_TYPES = [
+        self::PURCHASE_TYPE_ONLINE,
+        self::PURCHASE_TYPE_MANUAL,
+    ];
+
     protected $fillable = [
-        'sku','name','short_description','description','attributes','weight_gram','is_active', 'unit_id'
+        'sku','name','short_description','description','attributes','weight_gram','is_active', 'unit_id', 'purchase_type'
     ];
 
     protected $casts = [

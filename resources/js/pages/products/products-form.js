@@ -528,6 +528,14 @@ $(function() {
         })();
         const weight = $('input[name="weight_gram"]').val() || '-';
 
+        // purchase type
+        const purchaseTypeText = (() => {
+            const $pt = $('#purchaseType');
+            if (!$pt.length) return '-';
+            const sel = $pt.find('option:selected').text();
+            return sel ? sel.trim() : '-';
+        })();
+
         // categories: use select2 selected texts or native selected options
         let categoriesText = '-';
         const $cat = $('#categoriesSelect');
@@ -560,6 +568,7 @@ $(function() {
         $('#review_name').html(escapeHtml(name) || '-');
         $('#review_sku').html(escapeHtml(sku) || '-');
         $('#review_unit').html(escapeHtml(unitText) || '-');
+        $('#review_purchase_type').html(escapeHtml(purchaseTypeText) || '-');
         $('#review_categories').html(categoriesText);
         $('#review_sub_categories').html(subCategoriesText);
         $('#review_meta_keywords').html(metaKeywordsText);
@@ -606,7 +615,7 @@ $(function() {
             debounceTimer = setTimeout(renderProductReview, 250);
         }
 
-        $(document).on('input change', 'input[name="name"], input[name="sku"], input[name="weight_gram"], #unitSelect, #categoriesSelect, #subCategoriesSelect, #metaKeywordsSelect', debounceRender);
+        $(document).on('input change', 'input[name="name"], input[name="sku"], input[name="weight_gram"], #unitSelect, #purchaseType, #categoriesSelect, #subCategoriesSelect, #metaKeywordsSelect', debounceRender);
 
         // re-render when variants change (add/remove or input inside variants)
         $(document).on('input change', '#variantsContainer', debounceRender);
