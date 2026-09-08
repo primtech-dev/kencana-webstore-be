@@ -48,6 +48,7 @@
                     <th>Meta Keyword</th>
                     <th>Varian</th>
                     <th>Unit</th>
+                    <th>Pembelian</th>
                     <th>Status</th>
                 </tr>
                 </thead>
@@ -109,6 +110,13 @@
                         </td>
                         <td>{{ $p['variant'] }}</td>
                         <td>{{ $p['unit'] }}</td>
+                        <td>
+                            @if(($p['purchase_type'] ?? 'online') === 'manual')
+                                <span class="badge bg-warning text-dark">Manual</span>
+                            @else
+                                <span class="badge bg-success">Online</span>
+                            @endif
+                        </td>
                         <td>
                             @if($p['status'] === 'OK')
                                 <span class="badge bg-success">OK</span>

@@ -828,6 +828,14 @@ class ProductController extends Controller
                 $fatalErrors[] = "Baris {$rowNum}: berat harus angka (gram)";
             }
 
+            // PURCHASE TYPE CHECK (FATAL) — kosong default ke "online"
+            $purchaseTypeInput = trim((string) ($data['purchase_type'] ?? ''));
+            $purchaseTypeValid = $purchaseTypeInput === '' || in_array(strtolower($purchaseTypeInput), Product::PURCHASE_TYPES, true);
+            if (!$purchaseTypeValid) {
+                $fatalErrors[] = "Baris {$rowNum}: purchase_type '{$data['purchase_type']}' tidak valid (harus 'online' atau 'manual')";
+            }
+            $purchaseType = $this->resolvePurchaseType($data['purchase_type'] ?? null);
+
             $categoryPreview = $this->previewCategories($data['categories'] ?? null);
 
             $hasNewCategory = collect($categoryPreview)->contains(fn($c) => $c['exists'] === false);
@@ -878,10 +886,11 @@ class ProductController extends Controller
                 'product' => $data['product_name'] ?? '-',
                 'variant' => $data['variant_name'] ?? '-',
                 'unit' => $data['unit'] ?? '-',
+                'purchase_type' => $purchaseType,
                 'categories' => $categoryPreview,
                 'sub_categories' => $subCategoryPreview,
                 'meta_keywords' => $metaKeywordPreview,
-                'status' => !$unitId ? 'ERROR' : (!empty($missingImages) ? 'WARNING' : 'OK'),
+                'status' => (!$unitId || !$purchaseTypeValid) ? 'ERROR' : (!empty($missingImages) ? 'WARNING' : 'OK'),
             ];
         }
 
@@ -948,6 +957,7 @@ class ProductController extends Controller
                 $data = array_combine($header, $row);
 
                 $unitId = $this->resolveUnitId($data['unit'] ?? null);
+                $purchaseType = $this->resolvePurchaseType($data['purchase_type'] ?? null);
 
                 /* =====================================================
                  | PRODUCT (support soft delete restore)
@@ -970,6 +980,7 @@ class ProductController extends Controller
                             : null,
                         'is_active' => true,
                         'unit_id'   => $unitId,
+                        'purchase_type' => $purchaseType,
                     ]);
                 } else {
                     $product = \App\Models\Product::create([
@@ -982,6 +993,7 @@ class ProductController extends Controller
                             : null,
                         'is_active' => true,
                         'unit_id'   => $unitId,
+                        'purchase_type' => $purchaseType,
                     ]);
                 }
 
@@ -1262,6 +1274,17 @@ class ProductController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Normalize the `purchase_type` import column: blank/unrecognized values
+     * gracefully fall back to "online" (fatal-error reporting for unrecognized
+     * non-blank values is handled separately in importPreview()).
+     */
+    private function resolvePurchaseType(?string $value): string
+    {
+        $normalized = strtolower(trim((string) $value));
+        return in_array($normalized, Product::PURCHASE_TYPES, true) ? $normalized : Product::PURCHASE_TYPE_ONLINE;
     }
 
     private function resolveOrCreateCategoryIds(?string $categories): array
