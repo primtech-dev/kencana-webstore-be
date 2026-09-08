@@ -39,6 +39,8 @@
                             <th>Nama</th>
                             <th>Satuan</th>
                             <th>SKU</th>
+                            <th>Kategori</th>
+                            <th>Sub Kategori</th>
                             <th>Jumlah Varian</th>
                             <th width="10%">Status</th>
                             <th width="12%">Created At</th>

@@ -299,7 +299,7 @@
     ]
   },
   "resources/js/pages/categories/categories-form.js": {
-    "file": "assets/categories-form-BrWunSCO.js",
+    "file": "assets/categories-form-CZQITxMF.js",
     "name": "categories-form",
     "src": "resources/js/pages/categories/categories-form.js",
     "isEntry": true,
@@ -797,7 +797,7 @@
     ]
   },
   "resources/js/pages/products/products.js": {
-    "file": "assets/products-BaZlM25l.js",
+    "file": "assets/products-CAZNNFrW.js",
     "name": "products",
     "src": "resources/js/pages/products/products.js",
     "isEntry": true,
@@ -911,7 +911,7 @@
     ]
   },
   "resources/js/pages/sub-categories/sub-categories-form.js": {
-    "file": "assets/sub-categories-form-mzUgoGmX.js",
+    "file": "assets/sub-categories-form-ePHm5bjd.js",
     "name": "sub-categories-form",
     "src": "resources/js/pages/sub-categories/sub-categories-form.js",
     "isEntry": true,

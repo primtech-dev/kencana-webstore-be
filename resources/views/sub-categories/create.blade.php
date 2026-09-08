@@ -65,7 +65,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Thumbnail Sub Kategori</label>
+                            <label class="form-label">Thumbnail Sub Kategori <small class="text-muted">(opsional)</small></label>
                             <input type="file"
                                    name="thumbnail"
                                    class="form-control @error('thumbnail') is-invalid @enderror"

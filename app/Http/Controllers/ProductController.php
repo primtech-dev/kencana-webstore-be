@@ -29,11 +29,13 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            // eager load unit (ambil kolom penting saja)
+            // eager load unit & categories (ambil kolom penting saja)
             $query = Product::select(['id','sku','name','is_active','created_at','unit_id'])
                 ->withCount('variants')
                 ->with(['unit' => function($q){
                     $q->select('id','code','name');
+                }, 'categories' => function($q){
+                    $q->select('categories.id','categories.name','categories.parent_id');
                 }]);
 
             $searchValue = $request->input('search.value');
@@ -56,13 +58,23 @@ class ProductController extends Controller
                     return '-';
                 })
                 ->addColumn('sku', fn(Product $p) => $p->sku ? e($p->sku) : '-')
+                ->addColumn('categories', function (Product $p) {
+                    $cats = $p->categories->whereNull('parent_id');
+                    if ($cats->isEmpty()) return '-';
+                    return $cats->map(fn($c) => '<span class="badge bg-light text-dark me-1">'.e($c->name).'</span>')->implode('');
+                })
+                ->addColumn('sub_categories', function (Product $p) {
+                    $subs = $p->categories->whereNotNull('parent_id');
+                    if ($subs->isEmpty()) return '-';
+                    return $subs->map(fn($c) => '<span class="badge bg-light text-dark me-1">'.e($c->name).'</span>')->implode('');
+                })
                 ->addColumn('variants_count', fn($p) => $p->variants_count)
                 ->addColumn('is_active', fn(Product $p) => $p->is_active ? 'Aktif' : 'Non-aktif')
                 ->addColumn('created_at', fn($p) => $p->created_at ? $p->created_at->format('d M Y H:i') : '-')
                 ->addColumn('action', function (Product $p) {
                     return view('products._column_action', ['p'=>$p])->render();
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'categories', 'sub_categories'])
                 ->toJson();
         }
 
