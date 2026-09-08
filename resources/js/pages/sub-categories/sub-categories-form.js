@@ -44,8 +44,6 @@ $(function () {
                 itemSelectText: '',
                 shouldSort: false,
                 placeholderValue: 'Pilih kategori induk',
-                removeItems: false,
-                maxItemCount: 1,
                 allowHTML: false,
             });
         }
@@ -60,13 +58,14 @@ $(function () {
     const $parent = $('#parent_id');
     const $form = $('#subCategoryForm');
 
-    // Auto-generate slug when name changes (only when slug is empty)
+    // Auto-generate slug from name, unless the user has typed into slug themselves
+    let slugManuallyEdited = false;
+    $slug.on('input', function () {
+        slugManuallyEdited = true;
+    });
     $name.on('input', function () {
-        const nameVal = $(this).val().trim();
-        if (!$slug.length) return;
-        if (!$slug.val().trim()) {
-            $slug.val(simpleSlugify(nameVal));
-        }
+        if (!$slug.length || slugManuallyEdited) return;
+        $slug.val(simpleSlugify($(this).val().trim()));
     });
 
     // Validate position numeric on blur

@@ -41,7 +41,6 @@ $(function() {
             { data: 'name', name: 'name' },
             { data: 'thumbnail', name: 'thumbnail', orderable: false, searchable: false },
             { data: 'slug', name: 'slug' },
-            { data: 'parent', name: 'parent', orderable: false, searchable: false },
             { data: 'position', name: 'position' },
             { data: 'is_active', name: 'is_active', className: 'text-center', orderable: false, searchable: false },
             { data: 'created_at', name: 'created_at' },
