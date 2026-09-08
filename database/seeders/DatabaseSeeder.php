@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BranchesPermissionSeeder::class,
             CategoryPermissionSeeder::class,
+            SubCategoryPermissionSeeder::class,
             CustomerPermissionSeeder::class,
             MetaKeywordPermissionSeeder::class,
             OrdersPermissionSeeder::class,

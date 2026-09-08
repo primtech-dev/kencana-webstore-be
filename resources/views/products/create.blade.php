@@ -227,6 +227,16 @@
 
                         <!-- Step 2: Categories -->
                         <div class="tab-pane fade" id="tabCategories">
+                            @php
+                                $oldCategories = old('categories');
+                                if (is_null($oldCategories)) {
+                                    $selectedCategoryIds = $product->exists ? $product->categories->whereNull('parent_id')->pluck('id')->toArray() : [];
+                                    $selectedSubCategoryIds = $product->exists ? $product->categories->whereNotNull('parent_id')->pluck('id')->toArray() : [];
+                                } else {
+                                    $selectedCategoryIds = array_map('intval', $oldCategories);
+                                    $selectedSubCategoryIds = array_map('intval', old('sub_categories', []));
+                                }
+                            @endphp
                             <div class="row">
                                 <div class="col-lg-8">
                                     <div class="mb-3">
@@ -234,12 +244,18 @@
                                         <select name="categories[]" id="categoriesSelect" class="form-select" multiple>
                                             @foreach($categories as $c)
                                                 <option value="{{ $c->id }}"
-                                                    {{ in_array($c->id, old('categories', $product->categories->pluck('id')->toArray() ?? [])) ? 'selected' : '' }}>
+                                                    {{ in_array($c->id, $selectedCategoryIds) ? 'selected' : '' }}>
                                                     {{ $c->name }}
                                                 </option>
                                             @endforeach
                                         </select>
                                         <small class="text-muted">Pilih 1 atau lebih kategori.</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Sub Kategori (multi)</label>
+                                        <select name="sub_categories[]" id="subCategoriesSelect" class="form-select" multiple></select>
+                                        <small class="text-muted">Pilih kategori terlebih dahulu, opsi sub kategori akan menyesuaikan.</small>
                                     </div>
                                 </div>
 
@@ -337,6 +353,9 @@
                                                 <dt class="col-sm-3">Kategori</dt>
                                                 <dd class="col-sm-9" id="review_categories">-</dd>
 
+                                                <dt class="col-sm-3">Sub Kategori</dt>
+                                                <dd class="col-sm-9" id="review_sub_categories">-</dd>
+
                                                 <dt class="col-sm-3">Meta Keyword</dt>
                                                 <dd class="col-sm-9" id="review_meta_keywords">-</dd>
 
@@ -399,6 +418,8 @@
 
     <script>
         window.metaKeywordSearchUrl = "{{ route('meta_keywords.search') }}";
+        window.allSubCategories = @json($subcategories->map(fn($s) => ['id' => $s->id, 'text' => $s->name, 'parent_id' => $s->parent_id])->values());
+        window.selectedSubCategoryIds = @json(array_values($selectedSubCategoryIds));
     </script>
 
     @if($errors->any())

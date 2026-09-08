@@ -46,6 +46,15 @@
                 </a>
             </li>
 
+            @can('sub_categories.view')
+                <li class="side-nav-item">
+                    <a href="{{route('sub_categories.index')}}" class="side-nav-link">
+                        <span class="menu-icon"><i data-lucide="tags"></i></span>
+                        <span class="menu-text">Sub Kategori</span>
+                    </a>
+                </li>
+            @endcan
+
             @can('meta_keywords.view')
                 <li class="side-nav-item">
                     <a href="{{route('meta_keywords.index')}}" class="side-nav-link">

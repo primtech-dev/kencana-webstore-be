@@ -54,7 +54,7 @@ function loadScript(src) {
 }
 
 /** Initialize Select2 on selector (dynamic load if needed) */
-async function initSelect2(selector = '#categoriesSelect') {
+async function initSelect2(selector = '#categoriesSelect', placeholder = 'Pilih kategori...') {
     try {
         if (!document.querySelector(selector)) return;
         // load CDN if select2 not present
@@ -63,7 +63,7 @@ async function initSelect2(selector = '#categoriesSelect') {
         }
         if (typeof $().select2 === 'function') {
             $(selector).select2({
-                placeholder: 'Pilih kategori...',
+                placeholder,
                 width: '100%',
                 allowClear: true
             });
@@ -111,6 +111,36 @@ async function initSelect2Tags(selector = '#metaKeywordsSelect') {
 /** Utility - safe query */
 function $qs(selector) {
     return $(selector).length ? $(selector) : null;
+}
+
+/**
+ * Rebuild the Sub Kategori <select> options based on the categories currently
+ * selected in #categoriesSelect. Sub-categories whose parent isn't selected
+ * are removed from the list (and deselected); previously selected ones are
+ * kept whenever their parent is still selected.
+ *
+ * @param {Array<number>|null} initialSelected - ids to preselect on first build (edit mode / old input)
+ */
+function rebuildSubCategorySelect(initialSelected) {
+    const $sub = $('#subCategoriesSelect');
+    if (!$sub.length) return;
+
+    const selectedCategoryIds = ($('#categoriesSelect').val() || []).map(v => parseInt(v, 10));
+    const currentVal = Array.isArray(initialSelected)
+        ? initialSelected.map(v => parseInt(v, 10))
+        : ($sub.val() || []).map(v => parseInt(v, 10));
+
+    const allSubCategories = Array.isArray(window.allSubCategories) ? window.allSubCategories : [];
+    const options = allSubCategories.filter(s => selectedCategoryIds.includes(parseInt(s.parent_id, 10)));
+    const keepVal = currentVal.filter(id => options.some(o => parseInt(o.id, 10) === id));
+
+    $sub.empty();
+    options.forEach(o => {
+        const opt = new Option(o.text, o.id, false, keepVal.includes(parseInt(o.id, 10)));
+        $sub.append(opt);
+    });
+
+    $sub.trigger('change');
 }
 
 /** Returns next variant index based on existing rows (ensures unique sequential indices) */
@@ -394,6 +424,15 @@ $(function() {
     initSelect2('#categoriesSelect');
     initSelect2('#unitSelect');
     initSelect2Tags('#metaKeywordsSelect');
+
+    // Sub Kategori: dependent multi-select, options rebuilt from the selected Kategori
+    initSelect2('#subCategoriesSelect', 'Pilih sub kategori...').then(() => {
+        rebuildSubCategorySelect(window.selectedSubCategoryIds || []);
+    });
+    $(document).on('change', '#categoriesSelect', function () {
+        rebuildSubCategorySelect();
+    });
+
     bindVariantControls();
     setupImagePreview('#productImagesInput', '#imagePreview');
     bindDeleteImageAjax();
@@ -497,6 +536,14 @@ $(function() {
             if (selected.length) categoriesText = selected.map(s => `<span class="badge bg-light text-dark me-1">${escapeHtml(s)}</span>`).join(' ');
         }
 
+        // sub categories: same treatment as categories
+        let subCategoriesText = '-';
+        const $subCat = $('#subCategoriesSelect');
+        if ($subCat.length) {
+            const selected = $subCat.find('option:selected').map(function(){ return $(this).text().trim(); }).get();
+            if (selected.length) subCategoriesText = selected.map(s => `<span class="badge bg-light text-dark me-1">${escapeHtml(s)}</span>`).join(' ');
+        }
+
         // meta keywords: same treatment as categories
         let metaKeywordsText = '-';
         const $mk = $('#metaKeywordsSelect');
@@ -514,6 +561,7 @@ $(function() {
         $('#review_sku').html(escapeHtml(sku) || '-');
         $('#review_unit').html(escapeHtml(unitText) || '-');
         $('#review_categories').html(categoriesText);
+        $('#review_sub_categories').html(subCategoriesText);
         $('#review_meta_keywords').html(metaKeywordsText);
         $('#review_weight').html(escapeHtml(weight) !== '' ? escapeHtml(weight + ' gr') : '-');
 
@@ -558,7 +606,7 @@ $(function() {
             debounceTimer = setTimeout(renderProductReview, 250);
         }
 
-        $(document).on('input change', 'input[name="name"], input[name="sku"], input[name="weight_gram"], #unitSelect, #categoriesSelect, #metaKeywordsSelect', debounceRender);
+        $(document).on('input change', 'input[name="name"], input[name="sku"], input[name="weight_gram"], #unitSelect, #categoriesSelect, #subCategoriesSelect, #metaKeywordsSelect', debounceRender);
 
         // re-render when variants change (add/remove or input inside variants)
         $(document).on('input change', '#variantsContainer', debounceRender);

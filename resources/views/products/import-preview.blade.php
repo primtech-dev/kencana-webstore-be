@@ -44,6 +44,7 @@
                     <th>Row</th>
                     <th>Produk</th>
                     <th>Kategori</th>
+                    <th>Sub Kategori</th>
                     <th>Meta Keyword</th>
                     <th>Varian</th>
                     <th>Unit</th>
@@ -65,6 +66,23 @@
                                                             @else
                                                                 <span class="badge bg-info me-1">
                                             {{ $cat['name'] }} (new)
+                                        </span>
+                                    @endif
+                                @endforeach
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if(!empty($p['sub_categories']))
+                                @foreach($p['sub_categories'] as $sub)
+                                    @if($sub['exists'])
+                                        <span class="badge bg-success me-1">
+                                            {{ $sub['name'] }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-info me-1">
+                                            {{ $sub['name'] }} (new)
                                         </span>
                                     @endif
                                 @endforeach

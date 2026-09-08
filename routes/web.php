@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\MetaKeywordController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\PermissionController;
@@ -66,6 +67,18 @@ Route::middleware(['auth'])->name('categories.')->prefix('categories')->group(fu
     Route::put('/{id}', [CategoryController::class, 'update'])->name('update')->middleware('permission:categories.update');
     Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy')->middleware('permission:categories.delete');
     Route::get('/{id}', [CategoryController::class, 'show'])->name('show')->middleware('permission:categories.view');
+});
+
+Route::middleware(['auth'])->name('sub_categories.')->prefix('sub-categories')->group(function () {
+    Route::get('/', [SubCategoryController::class, 'index'])->name('index')->middleware('permission:sub_categories.view');
+    Route::get('/create', [SubCategoryController::class, 'create'])->name('create')->middleware('permission:sub_categories.create');
+    Route::post('/', [SubCategoryController::class, 'store'])->name('store')->middleware('permission:sub_categories.create');
+    Route::get('/import', [SubCategoryController::class, 'importForm'])->name('import.form')->middleware('permission:sub_categories.create');
+    Route::post('/import', [SubCategoryController::class, 'import'])->name('import.process')->middleware('permission:sub_categories.create');
+    Route::get('/import/template', [SubCategoryController::class, 'downloadImportTemplate'])->name('import.template')->middleware('permission:sub_categories.create');
+    Route::get('/{id}/edit', [SubCategoryController::class, 'edit'])->name('edit')->middleware('permission:sub_categories.update');
+    Route::put('/{id}', [SubCategoryController::class, 'update'])->name('update')->middleware('permission:sub_categories.update');
+    Route::delete('/{id}', [SubCategoryController::class, 'destroy'])->name('destroy')->middleware('permission:sub_categories.delete');
 });
 
 Route::middleware(['auth'])->name('meta_keywords.')->prefix('meta-keywords')->group(function () {

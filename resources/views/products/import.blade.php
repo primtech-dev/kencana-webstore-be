@@ -35,6 +35,8 @@
             <div class="alert alert-info mt-2 mb-4">
                 <ul class="mb-0">
                     <li>Gunakan <strong>template Excel</strong> agar format sesuai sistem</li>
+                    <li>Kolom <strong>categories</strong> diisi nama kategori utama, kolom <strong>sub_categories</strong> diisi nama sub kategorinya &mdash; keduanya boleh lebih dari satu, pisahkan dengan tanda <code>|</code> (contoh: <code>Atap Metal|Aksesoris</code>)</li>
+                    <li>Sub kategori yang belum ada akan otomatis dibuat di bawah kategori <strong>pertama</strong> pada kolom <em>categories</em> di baris yang sama &mdash; pastikan kolom <em>categories</em> tidak kosong jika mengisi <em>sub_categories</em></li>
                     <li>Nama file gambar di Excel harus <strong>sama persis</strong> dengan isi ZIP</li>
                     <li>ZIP gambar <strong>tanpa folder</strong> (langsung file)</li>
                 </ul>

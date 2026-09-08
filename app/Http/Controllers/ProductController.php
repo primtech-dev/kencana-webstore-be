@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductImportTemplateExport;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\MetaKeyword;
@@ -71,8 +72,14 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::whereNull('parent_id')->orderBy('position')->get();
+        $subcategories = Category::whereNotNull('parent_id')->orderBy('position')->get(['id','name','parent_id']);
         $units = Unit::orderBy('name')->get();
-        return view('products.create', ['product' => new Product(), 'categories' => $categories, 'units' => $units]);
+        return view('products.create', [
+            'product' => new Product(),
+            'categories' => $categories,
+            'subcategories' => $subcategories,
+            'units' => $units,
+        ]);
     }
 
     public function store(Request $request)
@@ -97,9 +104,13 @@ class ProductController extends Controller
                 'unit_id' => $validated['unit_id'] ?? null
             ]);
 
-            // 2) categories pivot
-            if (!empty($validated['categories']) && is_array($validated['categories'])) {
-                $product->categories()->sync($validated['categories']);
+            // 2) categories pivot (kategori utama + sub kategori digabung dalam satu pivot)
+            $categoryIds = array_values(array_unique(array_merge(
+                $validated['categories'] ?? [],
+                $validated['sub_categories'] ?? []
+            )));
+            if (!empty($categoryIds)) {
+                $product->categories()->sync($categoryIds);
             }
 
             // 2b) meta keywords pivot (may include ids of existing keywords and/or newly typed names)
@@ -284,9 +295,10 @@ class ProductController extends Controller
     public function edit(int $id)
     {
         $product = Product::with(['variants.images','images','categories','metaKeywords'])->findOrFail($id);
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::whereNull('parent_id')->orderBy('position')->get();
+        $subcategories = Category::whereNotNull('parent_id')->orderBy('position')->get(['id','name','parent_id']);
         $units = Unit::orderBy('name')->get();
-        return view('products.create', compact('product','categories','units'));
+        return view('products.create', compact('product','categories','subcategories','units'));
     }
 
     public function update(Request $request, int $id)
@@ -314,8 +326,12 @@ class ProductController extends Controller
                 'unit_id' => $validated['unit_id'] ?? null
             ]);
 
-            // 2) sync categories
-            $product->categories()->sync($validated['categories'] ?? []);
+            // 2) sync categories (kategori utama + sub kategori digabung dalam satu pivot)
+            $categoryIds = array_values(array_unique(array_merge(
+                $validated['categories'] ?? [],
+                $validated['sub_categories'] ?? []
+            )));
+            $product->categories()->sync($categoryIds);
 
             // 2b) sync meta keywords (may include ids of existing keywords and/or newly typed names)
             $product->metaKeywords()->sync($this->resolveOrCreateMetaKeywordIds($request->input('meta_keywords', [])));
@@ -549,6 +565,18 @@ class ProductController extends Controller
             'is_active' => 'sometimes|boolean',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
+            'sub_categories' => 'nullable|array',
+            'sub_categories.*' => ['integer', 'exists:categories,id', function ($attribute, $value, $fail) use ($request) {
+                $subCategory = Category::find($value);
+                if (!$subCategory || is_null($subCategory->parent_id)) {
+                    $fail('Sub kategori tidak valid.');
+                    return;
+                }
+                $selectedCategories = array_map('intval', $request->input('categories', []));
+                if (!in_array((int) $subCategory->parent_id, $selectedCategories, true)) {
+                    $fail('Sub kategori yang dipilih harus sesuai dengan kategori yang dipilih.');
+                }
+            }],
             'meta_keywords' => 'nullable|array',
             'meta_keywords.*' => 'string',
             'unit_id' => 'nullable',
@@ -588,7 +616,7 @@ class ProductController extends Controller
     protected function prepareValidated(Request $request): array
     {
         $validated = $request->only([
-            'sku','name','short_description','description','weight_gram','is_active','categories','variants', 'unit_id'
+            'sku','name','short_description','description','weight_gram','is_active','categories','sub_categories','variants', 'unit_id'
         ]);
 
         // normalize attributes
@@ -785,6 +813,18 @@ class ProductController extends Controller
                 $warnings[] = "Baris {$rowNum}: terdapat kategori baru yang akan dibuat otomatis";
             }
 
+            $subCategoryPreview = $this->previewSubCategories($data['sub_categories'] ?? null);
+
+            $hasNewSubCategory = collect($subCategoryPreview)->contains(fn($c) => $c['exists'] === false);
+
+            if ($hasNewSubCategory) {
+                if (empty($data['categories'])) {
+                    $warnings[] = "Baris {$rowNum}: sub kategori baru diabaikan karena kolom 'categories' kosong (sub kategori butuh kategori induk)";
+                } else {
+                    $warnings[] = "Baris {$rowNum}: terdapat sub kategori baru yang akan dibuat otomatis di bawah kategori pertama pada kolom 'categories'";
+                }
+            }
+
             $metaKeywordPreview = $this->previewMetaKeywords($data['meta_keyword'] ?? null);
 
             $hasNewMetaKeyword = collect($metaKeywordPreview)->contains(fn($m) => $m['exists'] === false);
@@ -816,6 +856,7 @@ class ProductController extends Controller
                 'variant' => $data['variant_name'] ?? '-',
                 'unit' => $data['unit'] ?? '-',
                 'categories' => $categoryPreview,
+                'sub_categories' => $subCategoryPreview,
                 'meta_keywords' => $metaKeywordPreview,
                 'status' => !$unitId ? 'ERROR' : (!empty($missingImages) ? 'WARNING' : 'OK'),
             ];
@@ -921,10 +962,12 @@ class ProductController extends Controller
                     ]);
                 }
 
-                /* ================= CATEGORY ================= */
+                /* ================= CATEGORY & SUB CATEGORY ================= */
                 $categoryIds = $this->resolveOrCreateCategoryIds($data['categories'] ?? null);
-                if (!empty($categoryIds)) {
-                    $product->categories()->sync($categoryIds);
+                $subCategoryIds = $this->resolveOrCreateSubCategoryIds($data['sub_categories'] ?? null, $categoryIds);
+                $allCategoryIds = array_values(array_unique(array_merge($categoryIds, $subCategoryIds)));
+                if (!empty($allCategoryIds)) {
+                    $product->categories()->sync($allCategoryIds);
                 }
 
                 /* ================= META KEYWORD ================= */
@@ -1029,6 +1072,32 @@ class ProductController extends Controller
 
         foreach ($names as $name) {
             $exists = Category::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+                ->exists();
+
+            $result[] = [
+                'name' => $name,
+                'exists' => $exists, // false = akan di-create
+            ];
+        }
+
+        return $result;
+    }
+
+    private function previewSubCategories(?string $subCategories): array
+    {
+        if (!$subCategories) return [];
+
+        $names = array_values(array_filter(array_map(
+            fn($v) => trim($v),
+            explode('|', $subCategories)
+        )));
+
+        $result = [];
+
+        foreach ($names as $name) {
+            $exists = Category::withTrashed()
+                ->whereNotNull('parent_id')
                 ->whereRaw('LOWER(name) = ?', [strtolower($name)])
                 ->exists();
 
@@ -1222,6 +1291,65 @@ class ProductController extends Controller
         return $ids;
     }
 
+    /**
+     * Resolve pipe-separated sub category names into Category ids. A sub category
+     * must have a parent category, so a name that doesn't exist yet is auto-created
+     * under the first id in $parentCategoryIds (the row's resolved `categories`);
+     * if that row has no category at all, the sub category name is skipped since
+     * there is no parent to attach it to.
+     */
+    private function resolveOrCreateSubCategoryIds(?string $subCategories, array $parentCategoryIds): array
+    {
+        if (!$subCategories) return [];
+
+        $names = array_values(array_filter(array_map(
+            fn($v) => trim($v),
+            explode('|', $subCategories)
+        )));
+
+        if (empty($names)) return [];
+
+        $fallbackParentId = $parentCategoryIds[0] ?? null;
+        $ids = [];
+
+        foreach ($names as $name) {
+            $subCategory = Category::withTrashed()
+                ->whereNotNull('parent_id')
+                ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+                ->first();
+
+            if ($subCategory) {
+                if ($subCategory->deleted_at) {
+                    $subCategory->restore();
+                }
+            } else {
+                if (!$fallbackParentId) {
+                    // tidak ada kategori induk pada baris ini, sub kategori tidak bisa dibuat
+                    continue;
+                }
+
+                $baseSlug = Str::slug($name);
+                $slug = $baseSlug;
+                $i = 1;
+                while (Category::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . $i++;
+                }
+
+                $subCategory = Category::create([
+                    'name' => $name,
+                    'slug' => $slug,
+                    'parent_id' => $fallbackParentId,
+                    'is_active' => true,
+                    'position' => 0,
+                ]);
+            }
+
+            $ids[] = $subCategory->id;
+        }
+
+        return $ids;
+    }
+
     private function resolveCategoryIds(?string $categories): array
     {
         if (!$categories) return [];
@@ -1326,16 +1454,7 @@ class ProductController extends Controller
 
     public function downloadImportTemplate()
     {
-        $path = 'import-templates/product_import_template.xlsx';
-
-        if (!Storage::disk('private')->exists($path)) {
-            abort(404, 'Template tidak ditemukan');
-        }
-
-        return Storage::disk('private')->download(
-            $path,
-            'product_import_template.xlsx'
-        );
+        return Excel::download(new ProductImportTemplateExport(), 'product_import_template.xlsx');
     }
 
     public function downloadImportImagesExample()
