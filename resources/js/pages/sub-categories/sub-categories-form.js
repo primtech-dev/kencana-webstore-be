@@ -36,11 +36,10 @@ function isNumeric(value) {
 }
 
 $(function () {
-    // init Choices for parent select
+    // init Choices for parent select (searchable dropdown)
     try {
-        const parentSelect = document.querySelector('select[name="parent_id"]');
-        if (parentSelect) {
-            initChoices(parentSelect, {
+        if (document.querySelector('select[name="parent_id"]')) {
+            initChoices('select[name="parent_id"]', {
                 searchEnabled: true,
                 itemSelectText: '',
                 shouldSort: false,

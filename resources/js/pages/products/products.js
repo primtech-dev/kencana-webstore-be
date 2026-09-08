@@ -40,12 +40,14 @@ $(function() {
                 }
             },
             { data: 'sku', name: 'sku' },
+            { data: 'categories', name: 'categories', orderable:false, searchable:false },
+            { data: 'sub_categories', name: 'sub_categories', orderable:false, searchable:false },
             { data: 'variants_count', name: 'variants_count', orderable:false, searchable:false },
             { data: 'is_active', name: 'is_active', className: 'text-center', orderable:false, searchable:false },
             { data: 'created_at', name: 'created_at' },
             { data: 'action', name: 'action', orderable:false, searchable:false, className: 'text-center' }
         ],
-        order: [[6,'desc']],
+        order: [[8,'desc']],
 
         drawCallback: function() {
             try { if (window.lucide && typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e) {}
