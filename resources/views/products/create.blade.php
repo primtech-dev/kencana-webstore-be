@@ -212,6 +212,22 @@
                                             </div>
 
                                             <div class="mb-3">
+                                                <label class="form-label">Metode Pembelian</label>
+                                                @php
+                                                    $purchaseType = old('purchase_type', $product->purchase_type ?? 'online');
+                                                @endphp
+                                                <select name="purchase_type" id="purchaseType" class="form-select">
+                                                    <option value="online" {{ $purchaseType === 'online' ? 'selected' : '' }}>
+                                                        Checkout Online (langsung dibeli &amp; dibayar di webstore)
+                                                    </option>
+                                                    <option value="manual" {{ $purchaseType === 'manual' ? 'selected' : '' }}>
+                                                        Manual (diproses admin/hotline via WhatsApp)
+                                                    </option>
+                                                </select>
+                                                <small class="text-muted">Pilih "Manual" untuk produk yang perlu nego harga atau penanganan khusus oleh admin.</small>
+                                            </div>
+
+                                            <div class="mb-3">
                                                 <label class="form-label">Berat (gram)</label>
                                                 <input type="number" name="weight_gram" class="form-control" value="{{ old('weight_gram', $product->weight_gram) }}">
                                             </div>
@@ -349,6 +365,9 @@
 
                                                 <dt class="col-sm-3">Satuan</dt>
                                                 <dd class="col-sm-9" id="review_unit">-</dd>
+
+                                                <dt class="col-sm-3">Metode Pembelian</dt>
+                                                <dd class="col-sm-9" id="review_purchase_type">-</dd>
 
                                                 <dt class="col-sm-3">Kategori</dt>
                                                 <dd class="col-sm-9" id="review_categories">-</dd>

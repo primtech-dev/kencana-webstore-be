@@ -42,6 +42,7 @@
                             <th>Kategori</th>
                             <th>Sub Kategori</th>
                             <th>Jumlah Varian</th>
+                            <th width="10%">Pembelian</th>
                             <th width="10%">Status</th>
                             <th width="12%">Created At</th>
                             <th width="12%" class="text-center">Aksi</th>
