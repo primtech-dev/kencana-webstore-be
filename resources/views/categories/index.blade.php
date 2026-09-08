@@ -33,7 +33,6 @@
                             <th>Nama</th>
                             <th width="8%">Thumbnail</th>
                             <th>Slug</th>
-                            <th>Parent</th>
                             <th width="8%">Posisi</th>
                             <th width="10%">Status</th>
                             <th width="12%">Created At</th>

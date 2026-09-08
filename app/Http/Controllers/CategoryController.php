@@ -20,7 +20,7 @@ class CategoryController extends Controller
     {
         if ($request->ajax()) {
             $query = Category::select(['id','name','slug','parent_id','position','is_active','created_at', 'thumbnail'])
-                ->with('parent');
+                ->whereNull('parent_id');
 
             $searchValue = $request->input('search.value');
             if (!empty($searchValue)) {
@@ -32,9 +32,6 @@ class CategoryController extends Controller
 
             return datatables()->eloquent($query)
                 ->addIndexColumn()
-                ->addColumn('parent', function (Category $c) {
-                    return $c->parent ? e($c->parent->name) : '-';
-                })
                 ->addColumn('is_active', function (Category $c) {
                     return $c->is_active ? 'Aktif' : 'Non-aktif';
                 })

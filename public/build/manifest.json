@@ -299,7 +299,7 @@
     ]
   },
   "resources/js/pages/categories/categories-form.js": {
-    "file": "assets/categories-form-CZQITxMF.js",
+    "file": "assets/categories-form-CJi3wQ3F.js",
     "name": "categories-form",
     "src": "resources/js/pages/categories/categories-form.js",
     "isEntry": true,
@@ -312,7 +312,7 @@
     ]
   },
   "resources/js/pages/categories/categories.js": {
-    "file": "assets/categories-BroNnugC.js",
+    "file": "assets/categories-BxAN0_F4.js",
     "name": "categories",
     "src": "resources/js/pages/categories/categories.js",
     "isEntry": true,
@@ -911,7 +911,7 @@
     ]
   },
   "resources/js/pages/sub-categories/sub-categories-form.js": {
-    "file": "assets/sub-categories-form-ePHm5bjd.js",
+    "file": "assets/sub-categories-form-DEHo_8nM.js",
     "name": "sub-categories-form",
     "src": "resources/js/pages/sub-categories/sub-categories-form.js",
     "isEntry": true,

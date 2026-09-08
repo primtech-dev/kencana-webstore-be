@@ -42,7 +42,10 @@ class ProductController extends Controller
             if (!empty($searchValue)) {
                 $query->where(function ($q) use ($searchValue) {
                     $q->where('name', 'ilike', "%{$searchValue}%")
-                        ->orWhere('sku', 'ilike', "%{$searchValue}%");
+                        ->orWhere('sku', 'ilike', "%{$searchValue}%")
+                        ->orWhereHas('categories', function ($cq) use ($searchValue) {
+                            $cq->where('categories.name', 'ilike', "%{$searchValue}%");
+                        });
                 });
             }
 
