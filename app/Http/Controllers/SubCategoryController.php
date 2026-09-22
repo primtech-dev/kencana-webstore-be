@@ -35,6 +35,11 @@ class SubCategoryController extends Controller
                 });
             }
 
+            $parentId = $request->input('parent_id');
+            if (!empty($parentId)) {
+                $query->where('parent_id', $parentId);
+            }
+
             return datatables()->eloquent($query)
                 ->addIndexColumn()
                 ->addColumn('parent', function (Category $c) {
@@ -58,7 +63,9 @@ class SubCategoryController extends Controller
                 ->toJson();
         }
 
-        return view('sub-categories.index');
+        $parents = Category::whereNull('parent_id')->orderBy('position')->get();
+
+        return view('sub-categories.index', ['parents' => $parents]);
     }
 
     public function create()

@@ -31,6 +31,17 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12 col-sm-4 col-md-3">
+                            <label for="parent-filter" class="form-label">Filter Kategori Induk</label>
+                            <select id="parent-filter" class="form-select">
+                                <option value="">Semua Kategori Induk</option>
+                                @foreach ($parents as $parent)
+                                    <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                     <table class="table table-striped dt-responsive align-middle w-100" id="sub-categories-table">
                         <thead class="thead-sm text-uppercase fs-xxs">
                         <tr>
