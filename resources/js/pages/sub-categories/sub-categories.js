@@ -3,6 +3,7 @@ import DataTable from 'datatables.net-bs5';
 import 'datatables.net-responsive-bs5';
 import { showDeleteModal } from '../../utils/delete-modal-helper';
 import { initTooltips } from '../../utils/tooltip-helper';
+import { initChoices } from '../../utils/choices-helper';
 
 window.btnDeleteSubCategory = function (id, title) {
     showDeleteModal({
@@ -55,6 +56,14 @@ $(function() {
             try { if (window.lucide && typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e) {}
             initTooltips(document.querySelector('#sub-categories-table'));
         }
+    });
+
+    initChoices('#parent-filter', {
+        searchEnabled: true,
+        itemSelectText: '',
+        shouldSort: false,
+        placeholderValue: 'Semua Kategori Induk',
+        allowHTML: false,
     });
 
     $('#parent-filter').on('change', function() {
