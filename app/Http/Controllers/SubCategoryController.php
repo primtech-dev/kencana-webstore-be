@@ -179,8 +179,7 @@ class SubCategoryController extends Controller
             'excel' => 'required|file|mimes:xlsx,xls',
         ]);
 
-        $path = $request->file('excel')->getRealPath();
-        $rows = Excel::toArray([], $path)[0] ?? [];
+        $rows = Excel::toArray([], $request->file('excel'))[0] ?? [];
         $header = array_map(fn($h) => strtolower(trim((string) $h)), array_shift($rows) ?? []);
 
         $nameIndex = array_search('name', $header, true);
