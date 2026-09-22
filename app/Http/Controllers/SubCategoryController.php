@@ -38,7 +38,7 @@ class SubCategoryController extends Controller
             return datatables()->eloquent($query)
                 ->addIndexColumn()
                 ->addColumn('parent', function (Category $c) {
-                    return $c->parent ? e($c->parent->name) : '-';
+                    return $c->parent ? $c->parent->name : '-';
                 })
                 ->addColumn('is_active', function (Category $c) {
                     return $c->is_active ? 'Aktif' : 'Non-aktif';
