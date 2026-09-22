@@ -31,6 +31,9 @@ $(function() {
             type: 'GET',
             dataType: 'json',
             cache: false,
+            data: function(d) {
+                d.parent_id = $('#parent-filter').val();
+            },
             error: function(xhr, textStatus, errorThrown) {
                 console.error('DataTables AJAX error:', textStatus, errorThrown, xhr.responseText);
                 if (window.toast) window.toast.error('Gagal memuat data sub kategori. Cek console.');
@@ -52,6 +55,10 @@ $(function() {
             try { if (window.lucide && typeof window.lucide.replace === 'function') window.lucide.replace(); } catch(e) {}
             initTooltips(document.querySelector('#sub-categories-table'));
         }
+    });
+
+    $('#parent-filter').on('change', function() {
+        table.ajax.reload();
     });
 
     $(document).on('click', '.js-delete-sub-category', function(e) {
