@@ -50,7 +50,7 @@ class UnitController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'nullable|string|max:100|unique:units,code',
+            'code' => 'nullable|string|max:32|unique:units,code',
             'name' => 'required|string|max:255',
         ], self::VALIDATION_MESSAGES);
 
@@ -74,7 +74,7 @@ class UnitController extends Controller
         $unit = Unit::findOrFail($id);
 
         $validated = $request->validate([
-            'code' => ['nullable','string','max:100', Rule::unique('units','code')->ignore($unit->id)],
+            'code' => ['nullable','string','max:32', Rule::unique('units','code')->ignore($unit->id)],
             'name' => 'required|string|max:255',
         ], self::VALIDATION_MESSAGES);
 
