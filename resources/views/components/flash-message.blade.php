@@ -2,7 +2,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (window.toast) {
-                window.toast.success('{{ session('success') }}');
+                window.toast.success({!! json_encode((string) session('success')) !!});
             }
         });
     </script>
@@ -12,7 +12,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (window.toast) {
-                window.toast.error('{{ session('error') }}');
+                window.toast.error({!! json_encode((string) session('error')) !!});
             }
         });
     </script>
@@ -22,7 +22,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (window.toast) {
-                window.toast.warning('{{ session('warning') }}');
+                window.toast.warning({!! json_encode((string) session('warning')) !!});
             }
         });
     </script>
@@ -32,7 +32,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (window.toast) {
-                window.toast.info('{{ session('info') }}');
+                window.toast.info({!! json_encode((string) session('info')) !!});
             }
         });
     </script>
