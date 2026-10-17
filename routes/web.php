@@ -10,6 +10,7 @@ use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockReceiptController;
 use App\Http\Controllers\StockImportController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\OrderController;
@@ -163,6 +164,12 @@ Route::middleware(['auth'])->name('products.')->prefix('products')->group(functi
     Route::post('/{id}/images/reorder', [ProductController::class, 'reorderImages'])->name('products.images.reorder');
     Route::post('/images/{id}/set-main', [ProductController::class, 'setMainImage'])->name('products.images.set_main');
     Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])->name('products.images.destroy'); // if not present
+});
+
+Route::middleware(['auth', 'permission:inventory.view'])->name('inventory.')->prefix('inventory')->group(function () {
+    Route::get('/', [InventoryController::class, 'index'])->name('index');
+    Route::get('/movements', [InventoryController::class, 'movements'])->name('movements');
+    Route::get('/variants/{id}', [InventoryController::class, 'variant'])->whereNumber('id')->name('variant');
 });
 
 Route::middleware(['auth', 'permission:stock_imports.create'])->name('stock_imports.')->prefix('stock-imports')->group(function () {

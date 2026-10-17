@@ -16,7 +16,7 @@ class BranchAdminRoleSeeder extends Seeder
     public const PERMISSIONS = [
         'orders.view', 'orders.manage', 'orders.cancel', 'orders.ship', 'orders.delete',
         'stock_receipts.view', 'stock_receipts.create', 'stock_receipts.update', 'stock_receipts.delete',
-        'stock_imports.create',
+        'stock_imports.create', 'inventory.view',
         'customers.view',
         'products.view',
         'branches.view', 'branches.update',

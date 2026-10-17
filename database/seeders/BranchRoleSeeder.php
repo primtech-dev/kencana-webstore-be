@@ -25,7 +25,7 @@ class BranchRoleSeeder extends Seeder
     ];
 
     private const SALES = [
-        'products.view', 'branches.view',
+        'products.view', 'branches.view', 'inventory.view',
         'orders.view', 'orders.manage', 'orders.cancel', 'orders.ship',
         'customers.view', 'reviews.view', 'shipments.manage',
     ];
