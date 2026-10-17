@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Branch;
+use Database\Seeders\Concerns\ResyncsPgsqlSequences;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -21,8 +22,12 @@ use Illuminate\Support\Facades\DB;
  */
 class BranchMasterSeeder extends Seeder
 {
+    use ResyncsPgsqlSequences;
+
     public function run(): void
     {
+        $this->resyncPgsqlSequences();
+
         $dry = filter_var(env('SEED_DRY_RUN', false), FILTER_VALIDATE_BOOL);
         $master = require database_path('data/branches_master.php');
 
