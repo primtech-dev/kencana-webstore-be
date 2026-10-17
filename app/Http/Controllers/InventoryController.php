@@ -75,7 +75,7 @@ class InventoryController extends Controller
                             ->orWhereRaw('LOWER(v.variant_name) LIKE ?', [$like])
                             ->orWhereRaw('LOWER(p.name) LIKE ?', [$like]);
                     });
-                }, true)
+                })
                 ->addColumn('product', fn ($r) => '<a href="' . route('inventory.variant', $r->variant_id) . '?branch_id=' . $r->branch_id . '">'
                     . e($r->product_name ?: '-') . '</a><div class="small text-muted">' . e($r->variant_name) . '</div>')
                 ->editColumn('on_hand', fn ($r) => Qty::fmt($r->on_hand))
@@ -228,7 +228,7 @@ class InventoryController extends Controller
                         ->orWhereRaw('LOWER(p.name) LIKE ?', [$like])
                         ->orWhereRaw('LOWER(o.order_no) LIKE ?', [$like]);
                 });
-            }, true)
+            })
             ->editColumn('created_at', fn ($r) => \Carbon\Carbon::parse($r->created_at)->format('d M Y H:i'))
                         ->addColumn('product', fn ($r) => '<a href="' . route('inventory.variant', $r->variant_id) . '?branch_id=' . $r->branch_id . '">'
                 . e($r->product_name ?: '-') . '</a><div class="small text-muted">' . e($r->sku) . ' &middot; ' . e($r->variant_name) . '</div>')

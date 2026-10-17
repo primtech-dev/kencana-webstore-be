@@ -72,7 +72,7 @@ class OrderController extends Controller
                             ->orWhereRaw('LOWER(CAST(orders.public_id AS TEXT)) LIKE ?', [$like])
                             ->orWhereHas('customer', fn ($c) => $c->whereRaw('LOWER(full_name) LIKE ?', [$like]));
                     });
-                }, true)
+                })
                 ->addColumn('customer', fn (Order $o) => $o->customer ? $o->customer->full_name : '-')
                 ->addColumn('branch', fn (Order $o) => $o->branch ? $o->branch->name : '-')
                 ->editColumn('total_amount', fn (Order $o) => 'Rp ' . number_format($o->total_amount, 0, ',', '.'))
