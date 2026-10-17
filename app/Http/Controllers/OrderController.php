@@ -73,8 +73,8 @@ class OrderController extends Controller
                             ->orWhereHas('customer', fn ($c) => $c->whereRaw('LOWER(full_name) LIKE ?', [$like]));
                     });
                 }, true)
-                ->addColumn('customer', fn (Order $o) => $o->customer ? e($o->customer->full_name) : '-')
-                ->addColumn('branch', fn (Order $o) => $o->branch ? e($o->branch->name) : '-')
+                ->addColumn('customer', fn (Order $o) => $o->customer ? $o->customer->full_name : '-')
+                ->addColumn('branch', fn (Order $o) => $o->branch ? $o->branch->name : '-')
                 ->editColumn('total_amount', fn (Order $o) => 'Rp ' . number_format($o->total_amount, 0, ',', '.'))
                 ->orderColumn('total_amount', fn ($q, $order) => $q->orderBy('orders.total_amount', $order))
                 ->editColumn('status', function (Order $o) {

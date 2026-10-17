@@ -101,12 +101,14 @@
             </li>
             @endcan
 
-            {{--            <li class="side-nav-item">--}}
-            {{--                <a href="" class="side-nav-link">--}}
-            {{--                    <span class="menu-icon"><i data-lucide="box"></i></span>--}}
-            {{--                    <span class="menu-text">Inventory</span>--}}
-            {{--                </a>--}}
-            {{--            </li>--}}
+            @can('inventory.view')
+                <li class="side-nav-item">
+                    <a href="{{ route('inventory.index') }}" class="side-nav-link {{ request()->routeIs('inventory.index', 'inventory.variant') ? 'active' : '' }}">
+                        <span class="menu-icon"><i data-lucide="box"></i></span>
+                        <span class="menu-text">Stok</span>
+                    </a>
+                </li>
+            @endcan
 
             @can('stock_receipts.view')
             <li class="side-nav-item">
@@ -124,12 +126,14 @@
             {{--                </a>--}}
             {{--            </li>--}}
 
-            {{--            <li class="side-nav-item">--}}
-            {{--                <a href="" class="side-nav-link">--}}
-            {{--                    <span class="menu-icon"><i data-lucide="activity"></i></span>--}}
-            {{--                    <span class="menu-text">Riwayat Stok</span>--}}
-            {{--                </a>--}}
-            {{--            </li>--}}
+            @can('inventory.view')
+                <li class="side-nav-item">
+                    <a href="{{ route('inventory.movements') }}" class="side-nav-link {{ request()->routeIs('inventory.movements') ? 'active' : '' }}">
+                        <span class="menu-icon"><i data-lucide="activity"></i></span>
+                        <span class="menu-text">Riwayat Stok</span>
+                    </a>
+                </li>
+            @endcan
 
             <!-- Pesanan & Pelanggan -->
             <li class="side-nav-title mt-2">Pesanan & Pelanggan</li>
