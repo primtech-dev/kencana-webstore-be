@@ -64,7 +64,12 @@
     if (config.sidenav.size) {
         let size = config.sidenav.size;
 
-        if (window.innerWidth <= 1140) {
+        let sidenavHidden = false;
+        try {
+            sidenavHidden = localStorage.getItem("__sidenav_hidden__") === "1";
+        } catch (e) {}
+
+        if (window.innerWidth <= 1140 || sidenavHidden) {
             size = "offcanvas";
         }
 
