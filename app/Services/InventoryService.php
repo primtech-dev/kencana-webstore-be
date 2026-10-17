@@ -58,7 +58,8 @@ class InventoryService
 
     /**
      * Set stok absolut. Mengembalikan movement, atau null bila tidak ada perubahan.
-     * Ditolak bila stok baru lebih kecil dari reserved.
+     * Ditolak bila stok baru lebih kecil dari reserved, kecuali $allowBelowReserved
+     * (mis. sinkron dari Odoo: stok fisik adalah acuan, available dipotong jadi 0).
      */
     public function setStock(
         int $branchId,
@@ -69,8 +70,9 @@ class InventoryService
         ?string $referenceId = null,
         ?int $performedBy = null,
         array $metadata = [],
+        bool $allowBelowReserved = false,
     ): ?StockMovement {
-        return DB::transaction(function () use ($branchId, $variantId, $newOnHand, $reason, $referenceType, $referenceId, $performedBy, $metadata) {
+        return DB::transaction(function () use ($branchId, $variantId, $newOnHand, $reason, $referenceType, $referenceId, $performedBy, $metadata, $allowBelowReserved) {
             $targetCents = Qty::toCents($newOnHand);
             if ($targetCents < 0) {
                 throw new InventoryException('Stok tidak boleh negatif.');
@@ -80,7 +82,7 @@ class InventoryService
             $currentCents = Qty::toCents($row->on_hand);
             $reservedCents = Qty::toCents($row->reserved);
 
-            if ($targetCents < $reservedCents) {
+            if ($targetCents < $reservedCents && ! $allowBelowReserved) {
                 throw new InventoryException(sprintf(
                     'Stok baru (%s) lebih kecil dari stok yang sudah dipesan/reserved (%s).',
                     Qty::fmt(Qty::fromCents($targetCents)), Qty::fmt(Qty::fromCents($reservedCents))
