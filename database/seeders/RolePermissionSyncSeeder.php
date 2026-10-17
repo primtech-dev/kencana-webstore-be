@@ -68,12 +68,15 @@ class RolePermissionSyncSeeder extends Seeder
 
         // opsional: buat user superadmin default jika belum ada
         $defaultEmail = 'superadmin@example.com';
-        if (!User::where('email', $defaultEmail)->exists()) {
+        if (app()->environment('production')) {
+            $this->command?->info('Production: user superadmin default tidak dibuat (gunakan UserSeeder + SEED_ADMIN_PASSWORD).');
+        } elseif (!User::where('email', $defaultEmail)->exists()) {
             $pwd = 'password123'; // ganti segera setelah login
             $user = User::create([
                 'name' => 'Super Admin',
                 'email' => $defaultEmail,
                 'password' => Hash::make($pwd),
+                'is_superadmin' => true,
             ]);
             $user->assignRole($superAdmin);
             $this->command->info("User superadmin dibuat: {$defaultEmail} / {$pwd}");

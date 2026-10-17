@@ -32,19 +32,23 @@
             <!-- Produk & Katalog -->
             <li class="side-nav-title mt-2">Produk & Katalog</li>
 
+            @can('products.view')
             <li class="side-nav-item">
                 <a href="{{route('products.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="package"></i></span>
                     <span class="menu-text">Produk</span>
                 </a>
             </li>
+            @endcan
 
+            @can('categories.view')
             <li class="side-nav-item">
                 <a href="{{route("categories.index")}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="tag"></i></span>
                     <span class="menu-text">Kategori</span>
                 </a>
             </li>
+            @endcan
 
             @can('sub_categories.view')
                 <li class="side-nav-item">
@@ -64,12 +68,14 @@
                 </li>
             @endcan
 
+            @can('units.view')
             <li class="side-nav-item">
                 <a href="{{ route('units.index') }}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="ruler"></i></span>
                     <span class="menu-text">Satuan / Unit</span>
                 </a>
             </li>
+            @endcan
 
             @can('home_banners.view')
                 <li class="side-nav-item">
@@ -86,12 +92,14 @@
             <!-- Persediaan & Gudang -->
             <li class="side-nav-title mt-2">Persediaan & Gudang</li>
 
+            @can('branches.view')
             <li class="side-nav-item">
                 <a href="{{route('branches.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="map-pin"></i></span>
                     <span class="menu-text">Cabang</span>
                 </a>
             </li>
+            @endcan
 
             {{--            <li class="side-nav-item">--}}
             {{--                <a href="" class="side-nav-link">--}}
@@ -100,12 +108,14 @@
             {{--                </a>--}}
             {{--            </li>--}}
 
+            @can('stock_receipts.view')
             <li class="side-nav-item">
                 <a href="{{route('stock_receipts.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="inbox"></i></span>
                     <span class="menu-text">Penerimaan Stok</span>
                 </a>
             </li>
+            @endcan
 
             {{--            <li class="side-nav-item">--}}
             {{--                <a href="" class="side-nav-link">--}}
@@ -124,12 +134,14 @@
             <!-- Pesanan & Pelanggan -->
             <li class="side-nav-title mt-2">Pesanan & Pelanggan</li>
 
+            @can('orders.view')
             <li class="side-nav-item">
                 <a href="{{route('admin.orders.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="shopping-cart"></i></span>
                     <span class="menu-text">Pesanan</span>
                 </a>
             </li>
+            @endcan
 
             {{--            <li class="side-nav-item">--}}
             {{--                <a href="" class="side-nav-link">--}}
@@ -145,12 +157,14 @@
             {{--                </a>--}}
             {{--            </li>--}}
 
+            @can('customers.view')
             <li class="side-nav-item">
                 <a href="{{route('customers.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="users"></i></span>
                     <span class="menu-text">Pelanggan</span>
                 </a>
             </li>
+            @endcan
 
             {{--            <li class="side-nav-item">--}}
             {{--                <a href="" class="side-nav-link">--}}
@@ -213,26 +227,32 @@
             <!-- Pengguna & Akses -->
             <li class="side-nav-title mt-2">Pengguna & Akses</li>
 
+            @can('users.view')
             <li class="side-nav-item">
                 <a href="{{route('users.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="user"></i></span>
                     <span class="menu-text">Admin / Pengguna</span>
                 </a>
             </li>
+            @endcan
 
+            @can('manage-access')
             <li class="side-nav-item">
                 <a href="{{route('roles.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="shield-check"></i></span>
                     <span class="menu-text">Role</span>
                 </a>
             </li>
+            @endcan
 
+            @can('manage-access')
             <li class="side-nav-item">
                 <a href="{{route('permissions.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="key"></i></span>
                     <span class="menu-text">Permission</span>
                 </a>
             </li>
+            @endcan
 
             <!-- Pengaturan / Settings -->
             {{--            <li class="side-nav-title mt-2">Pengaturan</li>--}}
@@ -271,12 +291,14 @@
             <!-- Optional: Reviews & Wishlist -->
             <li class="side-nav-title mt-2">Umpan Balik</li>
 
+            @can('reviews.view')
             <li class="side-nav-item">
                 <a href="{{route('admin.reviews.index')}}" class="side-nav-link">
                     <span class="menu-icon"><i data-lucide="star"></i></span>
                     <span class="menu-text">Ulasan</span>
                 </a>
             </li>
+            @endcan
 
 {{--            <li class="side-nav-item">--}}
 {{--                <a href="" class="side-nav-link">--}}

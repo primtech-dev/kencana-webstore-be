@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
@@ -11,6 +12,7 @@ class StockReceipt extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use BelongsToBranch;
 
     protected $table = 'stock_receipts';
 

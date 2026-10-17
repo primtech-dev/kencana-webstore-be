@@ -95,7 +95,7 @@ Route::middleware(['auth'])->name('meta_keywords.')->prefix('meta-keywords')->gr
     Route::delete('/{id}', [MetaKeywordController::class, 'destroy'])->name('destroy')->middleware('permission:meta_keywords.delete');
 });
 
-Route::middleware(['auth'])->name('roles.')->prefix('roles')->group(function () {
+Route::middleware(['auth', 'can:manage-access'])->name('roles.')->prefix('roles')->group(function () {
     Route::get('/', [RoleController::class, 'index'])->name('index')->middleware('permission:roles.view');
     Route::get('/create', [RoleController::class, 'create'])->name('create')->middleware('permission:roles.create');
     Route::post('/', [RoleController::class, 'store'])->name('store')->middleware('permission:roles.create');
@@ -105,7 +105,7 @@ Route::middleware(['auth'])->name('roles.')->prefix('roles')->group(function () 
     Route::get('/{id}', [RoleController::class, 'show'])->name('show')->middleware('permission:roles.view');
 });
 
-Route::middleware(['auth'])->name('permissions.')->prefix('permissions')->group(function () {
+Route::middleware(['auth', 'can:manage-access'])->name('permissions.')->prefix('permissions')->group(function () {
     Route::get('/', [PermissionController::class, 'index'])->name('index')->middleware('permission:permissions.view');
     Route::get('/create', [PermissionController::class, 'create'])->name('create')->middleware('permission:permissions.create');
     Route::post('/', [PermissionController::class, 'store'])->name('store')->middleware('permission:permissions.create');
