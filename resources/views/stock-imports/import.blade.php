@@ -73,11 +73,11 @@
 
         <div class="col-lg-5">
             <div class="card">
-                <div class="card-header"><h6 class="mb-0">Riwayat Import Terakhir</h6></div>
+                <div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">Riwayat Import Terakhir</h6><a href="{{ route('stock_imports.history') }}" class="btn btn-sm btn-outline-primary">Lihat semua</a></div>
                 <div class="table-responsive">
                     <table class="table table-sm mb-0 align-middle">
                         <thead class="table-light">
-                        <tr><th>Waktu</th><th>Oleh</th><th>Sumber</th><th class="text-end">Diubah</th></tr>
+                        <tr><th>Waktu</th><th>Oleh</th><th>Sumber</th><th class="text-end">Diubah</th><th></th></tr>
                         </thead>
                         <tbody>
                         @forelse($logs as $log)
@@ -89,9 +89,10 @@
                                     {{ number_format($log->rows_changed, 0, ',', '.') }}
                                     @if($log->rows_zeroed)<span class="text-muted">({{ number_format($log->rows_zeroed, 0, ',', '.') }} dinolkan)</span>@endif
                                 </td>
+                                <td><a href="{{ route('stock_imports.show', $log->batch_id) }}" class="small">Detail</a></td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-muted small">Belum ada import.</td></tr>
+                            <tr><td colspan="5" class="text-muted small">Belum ada import.</td></tr>
                         @endforelse
                         </tbody>
                     </table>

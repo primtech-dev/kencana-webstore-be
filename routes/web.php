@@ -174,6 +174,8 @@ Route::middleware(['auth', 'permission:inventory.view'])->name('inventory.')->pr
 
 Route::middleware(['auth', 'permission:stock_imports.create'])->name('stock_imports.')->prefix('stock-imports')->group(function () {
     Route::get('/', [StockImportController::class, 'form'])->name('form');
+    Route::get('/history', [StockImportController::class, 'history'])->name('history');
+    Route::get('/history/{batch}', [StockImportController::class, 'show'])->name('show');
     Route::get('/template', [StockImportController::class, 'downloadTemplate'])->name('template');
     Route::get('/export', [StockImportController::class, 'exportCurrent'])->name('export');
     Route::post('/preview', [StockImportController::class, 'preview'])->name('preview');

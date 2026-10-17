@@ -119,6 +119,15 @@
             </li>
             @endcan
 
+            @can('stock_imports.create')
+                <li class="side-nav-item">
+                    <a href="{{ route('stock_imports.history') }}" class="side-nav-link {{ request()->routeIs('stock_imports.*') ? 'active' : '' }}">
+                        <span class="menu-icon"><i data-lucide="upload"></i></span>
+                        <span class="menu-text">Import Stok</span>
+                    </a>
+                </li>
+            @endcan
+
             {{--            <li class="side-nav-item">--}}
             {{--                <a href="" class="side-nav-link">--}}
             {{--                    <span class="menu-icon"><i data-lucide="slack"></i></span>--}}

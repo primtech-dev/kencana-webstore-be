@@ -170,6 +170,7 @@ class InventoryController extends Controller
         $filters = $request->validate([
             'branch_id' => ['nullable', 'integer'],
             'variant_id' => ['nullable', 'integer'],
+            'batch_id' => ['nullable', 'uuid'],
             'reason' => ['nullable', Rule::in(array_keys(self::REASON_GROUPS))],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
@@ -199,6 +200,9 @@ class InventoryController extends Controller
 
         if (! empty($filters['variant_id'])) {
             $q->where('sm.variant_id', (int) $filters['variant_id']);
+        }
+        if (! empty($filters['batch_id'])) {
+            $q->where('sm.reference_id', $filters['batch_id']);
         }
         if (! empty($filters['reason'])) {
             $q->whereIn('sm.reason', self::REASON_GROUPS[$filters['reason']]['reasons']);

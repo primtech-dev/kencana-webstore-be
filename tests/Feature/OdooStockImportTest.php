@@ -243,4 +243,57 @@ class OdooStockImportTest extends TestCase
 
         $this->actingAs($admin)->get(route('stock_imports.form'))->assertOk()->assertSee('1.234')->assertSee('Odoo');
     }
+
+    public function test_history_list_and_detail_are_scoped_by_branch(): void
+    {
+        $a = $this->makeBranch('02');
+        $a->update(['name' => 'Kencana Store GRESIK_KEBOMAS']);
+        $b = $this->makeBranch('05');
+        $b->update(['name' => 'Kencana Store MALANG_BURING']);
+        $v = $this->makeVariant('100103010003');
+        $perms = ['stock_imports.create', 'inventory.view'];
+        $pusat = $this->makeAdmin(null, $perms, 'pusat');
+        $adminA = $this->makeAdmin($a, $perms, 'cabang_a');
+        $adminB = $this->makeAdmin($b, $perms, 'cabang_b');
+
+        // import 1: dua cabang oleh pusat; import 2: hanya cabang B oleh admin B
+        $this->confirm($pusat, $this->preview($pusat, $this->odoo([
+            ['GD002/Stock', 'Kencana Store GRESIK_KEBOMAS', '[100103010003] ATAP', 4],
+            ['GD005/Stock', 'Kencana Store MALANG_BURING', '[100103010003] ATAP', 6],
+        ])))->assertSessionHas('success');
+        $this->confirm($adminB, $this->preview($adminB, $this->odoo([
+            ['GD005/Stock', 'Kencana Store MALANG_BURING', '[100103010003] ATAP', 9],
+        ])))->assertSessionHas('success');
+        $this->assertSame(2, StockImportLog::count());
+
+        $first = StockImportLog::orderBy('id')->first();
+        $second = StockImportLog::orderBy('id')->skip(1)->first();
+        $cols = ['DT_RowIndex', 'created_at', 'user', 'source', 'file_name', 'branch_list', 'rows_changed', 'rows_zeroed', 'rows_skipped', 'action'];
+        $list = fn ($u, string $q = '') => $this->actingAs($u)->ajax()->get(route('stock_imports.history', $this->dtParams($cols, $q, ['order' => [['column' => 1, 'dir' => 'desc']]])))->assertOk();
+
+        $this->assertSame(2, $list($pusat)->json('recordsFiltered'));
+        $this->assertSame(1, $list($adminA)->json('recordsFiltered'));          // hanya import yang menyentuh Gresik
+        $this->assertSame(2, $list($adminB)->json('recordsFiltered'));
+        // pencarian dengan request DataTables sungguhan: satu/multi-kata tidak error, hasil sesuai
+        $this->assertSame(2, $list($pusat, 'quants')->json('recordsFiltered'));
+        $this->assertSame(2, $list($pusat, 'quants xlsx')->json('recordsFiltered'));
+        $this->assertSame(0, $list($pusat, 'tidak ada')->json('recordsFiltered'));
+        $this->assertNull($list($pusat, 'quants xlsx')->json('error'));
+
+        $row = collect($list($pusat)->json('data'))->first();
+        $this->assertStringContainsString('Odoo', $row['source']);
+        $this->assertStringContainsString(route('stock_imports.show', $second->batch_id), $row['action']);
+
+        // detail
+        $this->flushHeaders();
+        $this->actingAs($pusat)->get(route('stock_imports.show', $first->batch_id))->assertOk()->assertSee('Quants (stock.quant).xlsx');
+        $this->actingAs($adminA)->get(route('stock_imports.show', $first->batch_id))->assertOk();
+        $this->actingAs($adminA)->get(route('stock_imports.show', $second->batch_id))->assertNotFound();   // import cabang lain
+        $this->actingAs($pusat)->get('/stock-imports/history/bukan-uuid')->assertNotFound();
+
+        // perubahan stok per batch (riwayat stok difilter batch_id) dan dibatasi cabang
+        $mv = fn ($u) => $this->actingAs($u)->ajax()->get(route('inventory.movements', ['batch_id' => $first->batch_id]))->assertOk()->json('recordsFiltered');
+        $this->assertSame(2, $mv($pusat));
+        $this->assertSame(1, $mv($adminA));
+    }
 }

@@ -20,6 +20,7 @@ $(function () {
             cache: false,
             data: function (d) {
                 d.variant_id = routes.variantId || '';
+                d.batch_id = routes.batchId || '';
                 d.branch_id = $('#mv_branch').val() || '';
                 d.reason = $('#mv_reason').val() || '';
                 d.date_from = $('#mv_date_from').val() || '';
