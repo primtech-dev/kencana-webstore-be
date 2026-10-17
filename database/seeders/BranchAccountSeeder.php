@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Branch;
 use App\Models\User;
+use Database\Seeders\Concerns\ResyncsPgsqlSequences;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -23,6 +24,8 @@ use Illuminate\Support\Str;
  */
 class BranchAccountSeeder extends Seeder
 {
+    use ResyncsPgsqlSequences;
+
     public const DOMAIN = 'kencanastore.co.id';
 
     /** role => [awalan email, label nama] */
@@ -34,6 +37,7 @@ class BranchAccountSeeder extends Seeder
 
     public function run(): void
     {
+        $this->resyncPgsqlSequences();
         $this->call(BranchRoleSeeder::class);
 
         $password = Hash::make(env('SEED_ACCOUNT_PASSWORD', 'kencanastore'));

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\ResyncsPgsqlSequences;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -14,6 +15,8 @@ use Spatie\Permission\PermissionRegistrar;
  */
 class BranchRoleSeeder extends Seeder
 {
+    use ResyncsPgsqlSequences;
+
     private const INVENTORY = [
         'products.view', 'categories.view', 'sub_categories.view', 'units.view', 'branches.view',
         'stock_receipts.view', 'stock_receipts.create', 'stock_receipts.update', 'stock_receipts.delete',
@@ -35,6 +38,8 @@ class BranchRoleSeeder extends Seeder
 
     public function run(): void
     {
+        $this->resyncPgsqlSequences();
+
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $sets = [
