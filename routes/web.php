@@ -9,6 +9,7 @@ use App\Http\Controllers\Settings\PermissionController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockReceiptController;
+use App\Http\Controllers\StockImportController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\OrderController;
@@ -162,6 +163,14 @@ Route::middleware(['auth'])->name('products.')->prefix('products')->group(functi
     Route::post('/{id}/images/reorder', [ProductController::class, 'reorderImages'])->name('products.images.reorder');
     Route::post('/images/{id}/set-main', [ProductController::class, 'setMainImage'])->name('products.images.set_main');
     Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])->name('products.images.destroy'); // if not present
+});
+
+Route::middleware(['auth', 'permission:stock_imports.create'])->name('stock_imports.')->prefix('stock-imports')->group(function () {
+    Route::get('/', [StockImportController::class, 'form'])->name('form');
+    Route::get('/template', [StockImportController::class, 'downloadTemplate'])->name('template');
+    Route::get('/export', [StockImportController::class, 'exportCurrent'])->name('export');
+    Route::post('/preview', [StockImportController::class, 'preview'])->name('preview');
+    Route::post('/confirm', [StockImportController::class, 'process'])->name('process');
 });
 
 Route::middleware(['auth'])->name('stock_receipts.')->prefix('stock-receipts')->group(function () {

@@ -14,11 +14,18 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Daftar Stok Masuk</h5>
-            @can('stock_receipts.create')
-                <a href="{{ route('stock_receipts.create') }}" class="btn btn-primary">
-                    <i data-lucide="plus" class="me-1"></i> Tambah Stok Masuk
-                </a>
-            @endcan
+            <div class="d-flex gap-2">
+                @can('stock_imports.create')
+                    <a href="{{ route('stock_imports.form') }}" class="btn btn-outline-primary">
+                        <i data-lucide="upload" class="me-1"></i> Import Update Stok
+                    </a>
+                @endcan
+                @can('stock_receipts.create')
+                    <a href="{{ route('stock_receipts.create') }}" class="btn btn-primary">
+                        <i data-lucide="plus" class="me-1"></i> Tambah Stok Masuk
+                    </a>
+                @endcan
+            </div>
         </div>
         <div class="card-body">
             <table class="table table-striped dt-responsive w-100" id="stock-receipts-table">
