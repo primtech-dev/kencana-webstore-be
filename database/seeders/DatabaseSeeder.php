@@ -31,11 +31,17 @@ class DatabaseSeeder extends Seeder
             PermissionProductSeeder::class,
             StockPermissionSeeder::class,
             UnitPermissionSeeder::class,
+            ReviewPermissionSeeder::class,
+            HomeBannerPermissionSeeder::class,
+            StockImportPermissionSeeder::class,
+            BranchAdminRoleSeeder::class,
         ]);
 
         // ==== Master Data ====
         $this->call([
+            BranchMasterSeeder::class,
             UserSeeder::class,
+            BranchAccountSeeder::class,
             CustomerSeeder::class,
         ]);
 
