@@ -123,4 +123,20 @@ trait StoreFixtures
     {
         return $this->withHeaders(['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json']);
     }
+
+    /**
+     * Parameter request seperti yang dikirim DataTables asli (server-side): daftar kolom dengan
+     * searchable=true plus kata kunci pencarian. Tanpa ini, auto-search yajra tidak terpicu di tes.
+     *
+     * @param list<string> $columns nama kolom sesuai definisi tabel di JS
+     */
+    protected function dtParams(array $columns, string $search = '', array $extra = []): array
+    {
+        $cols = [];
+        foreach ($columns as $i => $name) {
+            $cols[$i] = ['data' => $name, 'name' => $name, 'searchable' => 'true', 'orderable' => 'true', 'search' => ['value' => '', 'regex' => 'false']];
+        }
+
+        return $extra + ['draw' => 1, 'start' => 0, 'length' => 10, 'columns' => $cols, 'search' => ['value' => $search, 'regex' => 'false']];
+    }
 }

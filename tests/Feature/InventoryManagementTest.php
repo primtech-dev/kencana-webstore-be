@@ -66,6 +66,16 @@ class InventoryManagementTest extends TestCase
 
         $search = $this->actingAs($pusat)->ajax()->get(route('inventory.index', ['search' => ['value' => 'sku-2']]));
         $this->assertSame(['Cabang B:SKU-2'], $this->stockRows($search));
+
+        // request DataTables sungguhan: daftar kolom + pencarian multi-kata (regresi error "i.branch_name does not exist")
+        $cols = ['DT_RowIndex', 'branch_name', 'sku', 'product', 'unit_name', 'on_hand', 'reserved', 'available', 'updated_at', 'action'];
+        $dt = fn (string $q, array $extra = []) => $this->actingAs($pusat)->ajax()->get(route('inventory.index', $this->dtParams($cols, $q, $extra)))->assertOk();
+
+        $this->assertSame(['Cabang B:SKU-2'], $this->stockRows($dt('produk sku-2')));
+        $this->assertSame(['Cabang A:SKU-1', 'Cabang B:SKU-1'], $this->stockRows($dt('varian sku-1')));
+        $this->assertSame([], $this->stockRows($dt('sku-1 tidak-ada')));
+        $this->assertNull($dt('sku')->json('error'));
+        $this->assertSame(['Cabang B:SKU-1'], $this->stockRows($dt('sku-1', ['branch_id' => $b->id])));
     }
 
     public function test_branch_user_only_sees_own_branch_even_if_requesting_another(): void
@@ -129,6 +139,12 @@ class InventoryManagementTest extends TestCase
         // pencarian nomor order & tanggal
         $byOrder = $this->actingAs($pusat)->ajax()->get(route('inventory.movements', ['search' => ['value' => strtolower($order->order_no)]]));
         $this->assertSame(1, $byOrder->json('recordsFiltered'));
+
+        // request DataTables sungguhan (daftar kolom + multi-kata)
+        $cols = ['created_at', 'branch_name', 'product', 'change', 'resulting_on_hand', 'reason', 'reference', 'performer', 'note'];
+        $multi = $this->actingAs($pusat)->ajax()->get(route('inventory.movements', $this->dtParams($cols, 'produk sku-1')))->assertOk();
+        $this->assertNull($multi->json('error'));
+        $this->assertSame(3, $multi->json('recordsFiltered'));
         $future = $this->actingAs($pusat)->ajax()->get(route('inventory.movements', ['date_from' => now()->addDay()->toDateString()]));
         $this->assertSame(0, $future->json('recordsFiltered'));
     }

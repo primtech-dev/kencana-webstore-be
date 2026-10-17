@@ -61,10 +61,17 @@ class BranchScopeTest extends TestCase
         $order = $this->makeOrder($a, [[$this->makeVariant(), 1]]);
         $pusat = $this->makeAdmin(null, self::ORDER_PERMS);
 
-        $hit = $this->actingAs($pusat)->ajax()->get(route('admin.orders.index', ['search' => ['value' => 'budi']]))->assertOk();
+        $cols = ['DT_RowIndex', 'order_no', 'customer', 'branch', 'total_amount', 'status', 'created_at', 'action'];
+        $get = fn (string $q) => $this->actingAs($pusat)->ajax()->get(route('admin.orders.index', $this->dtParams($cols, $q)))->assertOk();
+
+        $hit = $get('budi');
         $this->assertSame([$order->order_no], collect($hit->json('data'))->pluck('order_no')->all());
 
-        $miss = $this->actingAs($pusat)->ajax()->get(route('admin.orders.index', ['search' => ['value' => 'tidak-ada']]))->assertOk();
+        // multi-kata, seperti kotak pencarian DataTables sungguhan
+        $this->assertSame([$order->order_no], collect($get('budi santoso')->json('data'))->pluck('order_no')->all());
+        $this->assertSame([$order->order_no], collect($get(strtolower($order->order_no))->json('data'))->pluck('order_no')->all());
+
+        $miss = $get('tidak ada');
         $this->assertCount(0, $miss->json('data'));
     }
 

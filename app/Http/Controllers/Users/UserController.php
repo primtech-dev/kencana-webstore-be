@@ -35,7 +35,7 @@ class UserController extends Controller
                                 ->orWhereRaw('LOWER(users.email) LIKE ?', [$like])
                                 ->orWhereRaw('LOWER(users.phone) LIKE ?', [$like]);
                         });
-                    }, true)
+                    })
                     ->addColumn('branch', fn (User $u) => $u->branch ? e($u->branch->name) : 'Pusat')
                     ->addColumn('roles', function (User $u) {
                         $names = $u->roles->pluck('name')->map(fn ($r) => e($r))->toArray();

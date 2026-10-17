@@ -32,7 +32,7 @@ class BranchController extends Controller
                             ->orWhereRaw('LOWER(code) LIKE ?', [$like])
                             ->orWhereRaw('LOWER(city) LIKE ?', [$like]);
                     });
-                }, true)
+                })
                 ->addColumn('is_active', fn ($b) => $b->is_active ? 'Aktif' : 'Non-aktif')
                 ->addColumn('created_at', fn ($b) => $b->created_at ? $b->created_at->format('d M Y H:i') : '-')
                 ->addColumn('action', fn ($b) => view('branches._column_action', ['b' => $b])->render())
