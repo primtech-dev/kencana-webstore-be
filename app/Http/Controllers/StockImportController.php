@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 /**
@@ -47,6 +48,91 @@ class StockImportController extends Controller
         return view('stock-imports.import', [
             'logs' => StockImportLog::with('user:id,name')->latest('id')->limit(10)->get(),
         ]);
+    }
+
+    /** Daftar seluruh riwayat import stok. */
+    public function history(Request $request)
+    {
+        $user = $request->user();
+
+        if ($request->ajax()) {
+            $filters = $request->validate([
+                'source' => ['nullable', Rule::in(['odoo', 'template'])],
+                'date_from' => ['nullable', 'date'],
+                'date_to' => ['nullable', 'date'],
+            ]);
+
+            $q = $this->visibleLogs($user)->with('user:id,name')->select('stock_import_logs.*');
+
+            if (! empty($filters['source'])) {
+                $q->where('source', $filters['source']);
+            }
+            if (! empty($filters['date_from'])) {
+                $q->where('created_at', '>=', $filters['date_from'] . ' 00:00:00');
+            }
+            if (! empty($filters['date_to'])) {
+                $q->where('created_at', '<=', $filters['date_to'] . ' 23:59:59');
+            }
+
+            return datatables()->eloquent($q)
+                ->addIndexColumn()
+                ->filter(function ($query) use ($request) {
+                    // setiap kata harus cocok di nama file, batch, atau nama pengguna
+                    $words = preg_split('/\s+/', mb_strtolower(trim((string) $request->input('search.value'))), -1, PREG_SPLIT_NO_EMPTY);
+                    foreach ($words as $word) {
+                        $like = '%' . $word . '%';
+                        $query->where(fn ($w) => $w->whereRaw('LOWER(file_name) LIKE ?', [$like])
+                            ->orWhereRaw('CAST(batch_id AS TEXT) LIKE ?', [$like])
+                            ->orWhereHas('user', fn ($u) => $u->whereRaw('LOWER(name) LIKE ?', [$like])));
+                    }
+                })
+                ->editColumn('created_at', fn ($l) => $l->created_at?->format('d M Y H:i') ?? '-')
+                ->addColumn('user', fn ($l) => $l->user->name ?? '-')
+                ->editColumn('source', fn ($l) => '<span class="badge bg-' . ($l->source === 'odoo' ? 'primary' : 'secondary') . '">' . ($l->source === 'odoo' ? 'Odoo' : 'Template') . '</span>')
+                ->addColumn('branch_list', function ($l) {
+                    $codes = $l->branches ?? [];
+
+                    return count($codes) > 4 ? count($codes) . ' cabang' : (implode(', ', $codes) ?: '-');
+                })
+                ->editColumn('rows_changed', fn ($l) => number_format($l->rows_changed, 0, ',', '.'))
+                ->editColumn('rows_zeroed', fn ($l) => number_format($l->rows_zeroed, 0, ',', '.'))
+                ->editColumn('rows_skipped', fn ($l) => number_format($l->rows_skipped, 0, ',', '.'))
+                ->addColumn('action', fn ($l) => '<a class="btn btn-sm btn-outline-primary" href="' . route('stock_imports.show', $l->batch_id) . '">Detail</a>')
+                ->orderColumn('created_at', 'created_at $1, id $1')
+                ->rawColumns(['source', 'action'])
+                ->toJson();
+        }
+
+        return view('stock-imports.history');
+    }
+
+    /** Detail satu import: ringkasan + perubahan stok yang dihasilkan. */
+    public function show(Request $request, string $batch)
+    {
+        abort_unless(Str::isUuid($batch), 404);
+
+        $user = $request->user();
+        $log = $this->visibleLogs($user)->with('user:id,name')->where('batch_id', $batch)->firstOrFail();
+
+        return view('stock-imports.show', [
+            'log' => $log,
+            'showBranch' => $user->hasAllBranchScope(),
+            'branches' => Branch::accessibleBy($user)->orderBy('name')->get(['id', 'code', 'name', 'is_active']),
+            'reasonGroups' => collect(InventoryController::REASON_GROUPS)->map(fn ($g) => $g['label'])->all(),
+        ]);
+    }
+
+    /** Admin pusat melihat semua import; admin cabang hanya import yang menyentuh cabangnya. */
+    private function visibleLogs(User $user)
+    {
+        $q = StockImportLog::query();
+
+        if (! $user->hasAllBranchScope()) {
+            $code = $user->branch?->code;
+            $q->whereRaw('branches::jsonb @> ?::jsonb', [json_encode([(string) $code])]);
+        }
+
+        return $q;
     }
 
     public function downloadTemplate(Request $request)

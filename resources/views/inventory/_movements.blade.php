@@ -1,4 +1,4 @@
-{{-- Filter + tabel riwayat perubahan stok. Params: $showBranch, $branches, $reasonGroups, $variantId (opsional), $initialBranch (opsional) --}}
+{{-- Filter + tabel riwayat perubahan stok. Params: $showBranch, $branches, $reasonGroups, $variantId (opsional), $batchId (opsional), $initialBranch (opsional) --}}
 <div class="row g-2 mb-3" id="movementFilters">
     @if($showBranch)
         <div class="col-6 col-md-3">
@@ -54,6 +54,7 @@
     window.inventoryRoutes = Object.assign(window.inventoryRoutes || {}, {
         movements: '{{ route('inventory.movements') }}',
         variantId: @json($variantId ?? null),
+        batchId: @json($batchId ?? null),
         showBranch: @json($showBranch),
         hideProductColumn: @json(! empty($variantId)),
     });
