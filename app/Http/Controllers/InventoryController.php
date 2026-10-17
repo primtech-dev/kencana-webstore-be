@@ -76,14 +76,14 @@ class InventoryController extends Controller
                             ->orWhereRaw('LOWER(p.name) LIKE ?', [$like]);
                     });
                 })
-                ->addColumn('product', fn ($r) => '<a href="' . route('inventory.variant', $r->variant_id) . '?branch_id=' . $r->branch_id . '">'
+                ->addColumn('product', fn ($r) => '<a target="_blank" rel="noopener" href="' . route('inventory.variant', $r->variant_id) . '?branch_id=' . $r->branch_id . '">'
                     . e($r->product_name ?: '-') . '</a><div class="small text-muted">' . e($r->variant_name) . '</div>')
                 ->editColumn('on_hand', fn ($r) => Qty::fmt($r->on_hand))
                 ->editColumn('reserved', fn ($r) => Qty::fmt($r->reserved))
                 ->editColumn('available', fn ($r) => '<span class="fw-semibold ' . (Qty::cmp($r->available, 0) > 0 ? 'text-success' : 'text-danger') . '">'
                     . Qty::fmt($r->available) . '</span>')
                 ->editColumn('updated_at', fn ($r) => $r->updated_at ? \Carbon\Carbon::parse($r->updated_at)->format('d M Y H:i') : '-')
-                ->addColumn('action', fn ($r) => '<a class="btn btn-sm btn-outline-primary" href="' . route('inventory.variant', $r->variant_id) . '?branch_id=' . $r->branch_id . '">Riwayat</a>')
+                ->addColumn('action', fn ($r) => '<a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" href="' . route('inventory.variant', $r->variant_id) . '?branch_id=' . $r->branch_id . '">Riwayat</a>')
                 ->orderColumn('branch_name', 'b.name $1')
                 ->orderColumn('sku', 'v.sku $1')
                 ->orderColumn('product', 'p.name $1')
