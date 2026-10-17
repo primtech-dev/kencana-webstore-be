@@ -110,6 +110,11 @@ class RoleController extends Controller
             'permissions.*' => 'string|exists:permissions,name',
         ], self::VALIDATION_MESSAGES);
 
+        // role superadmin: nama tidak boleh berubah
+        if (strtolower($role->name) === 'superadmin') {
+            $validated['name'] = $role->name;
+        }
+
         try {
             $role->update(['name' => $validated['name']]);
             $role->syncPermissions($validated['permissions'] ?? []);
@@ -123,9 +128,12 @@ class RoleController extends Controller
     {
         $role = Role::findOrFail($id);
         try {
-            // optional: prevent deleting super-admin role by name
-            if (strtolower($role->name) === 'super-admin') {
+            // role sistem tidak boleh dihapus
+            if (strtolower($role->name) === 'superadmin') {
                 return redirect()->back()->with('error', 'Role ini tidak boleh dihapus.');
+            }
+            if ($role->users()->exists()) {
+                return redirect()->back()->with('error', 'Role masih dipakai user. Lepas dari user terlebih dahulu.');
             }
             $role->delete();
             return redirect()->route('roles.index')->with('success', 'Role berhasil dihapus');

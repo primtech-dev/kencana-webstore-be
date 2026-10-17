@@ -17,6 +17,10 @@ class StockReceiptItem extends Model
         'receipt_id','variant_id','quantity_received','unit_cost_cents'
     ];
 
+    protected $casts = [
+        'quantity_received' => 'decimal:2',
+    ];
+
     public function receipt()
     {
         return $this->belongsTo(StockReceipt::class, 'receipt_id');

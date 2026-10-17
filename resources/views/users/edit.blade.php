@@ -57,7 +57,7 @@
                         <div class="mb-3">
                             <label class="form-label">Branch</label>
                             <select name="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
-                                <option value="">— Tidak ada —</option>
+                                @if(auth()->user()->hasAllBranchScope())<option value="">Pusat (semua cabang)</option>@endif
                                 @foreach($branches as $b)
                                     <option value="{{ $b->id }}" {{ (old('branch_id', $user->branch_id) == $b->id) ? 'selected' : '' }}>{{ $b->name }}</option>
                                 @endforeach
@@ -133,14 +133,14 @@
                             <label class="form-check-label" for="isActive">Aktif</label>
                         </div>
 
-                        @can('users.update')
+                        @if(auth()->user()->isSuperAdmin())
                             <div class="mb-3 form-check">
                                 <input type="hidden" name="is_superadmin" value="0">
                                 <input id="isSuperadmin" type="checkbox" name="is_superadmin" value="1" class="form-check-input" {{ old('is_superadmin', $user->is_superadmin) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="isSuperadmin">Superadmin</label>
                                 <small class="d-block text-muted mt-1">Hati-hati: memberikan status superadmin memberikan akses penuh.</small>
                             </div>
-                        @endcan
+                        @endif
 
                         <div class="mb-3">
                             <label class="form-label">Tanggal dibuat</label>

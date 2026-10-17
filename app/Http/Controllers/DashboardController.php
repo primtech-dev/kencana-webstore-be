@@ -2,90 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Order;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    protected function scopeBranch($query, $column = 'branch_id')
+    /** Order yang dianggap tidak menghasilkan pendapatan. */
+    private const NON_REVENUE_STATUSES = ['cancelled', 'return'];
+
+    public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = $request->user();
 
-        if (!$user->is_superadmin) {
-            $query->where($column, $user->branch_id);
-        }
+        // Semua query lewat model Order -> soft-deleted otomatis dikecualikan,
+        // dan visibleTo() membatasi user cabang ke cabangnya sendiri.
+        $base = fn () => Order::visibleTo($user);
 
-        return $query;
-    }
+        $todayStart = today();
+        $tomorrowStart = today()->addDay();
+        $yesterdayStart = today()->subDay();
 
-    public function index()
-    {
-        $user = auth()->user();
+        $ordersToday = $base()->where('created_at', '>=', $todayStart)->where('created_at', '<', $tomorrowStart)->count();
+        $ordersYesterday = $base()->where('created_at', '>=', $yesterdayStart)->where('created_at', '<', $todayStart)->count();
 
-        // ORDERS
-        $ordersToday = $this->scopeBranch(
-            DB::table('orders')
-        )->whereDate('created_at', today())->count();
-
-        $ordersYesterday = $this->scopeBranch(
-            DB::table('orders')
-        )->whereDate('created_at', today()->subDay())->count();
-
-        // REVENUE
-        $revenueToday = $this->scopeBranch(
-            DB::table('orders')
-        )->whereDate('created_at', today())
+        $revenueToday = $base()
+            ->where('created_at', '>=', $todayStart)->where('created_at', '<', $tomorrowStart)
             ->where('payment_status', 'paid')
+            ->whereNotIn('status', self::NON_REVENUE_STATUSES)
             ->sum('total_amount');
 
-        // ACTIVE CUSTOMERS (24H)
-        $activeCustomers = $this->scopeBranch(
-            DB::table('orders')
-        )->where('created_at', '>=', now()->subDay())
-            ->distinct('customer_id')
+        $activeCustomers = $base()
+            ->where('created_at', '>=', now()->subDay())
+            ->whereNotIn('status', ['cancelled'])
+            ->distinct()
             ->count('customer_id');
 
-        // ORDER STATUS (30 DAYS)
-        $orderStats = $this->scopeBranch(
-            DB::table('orders')
-        )->selectRaw("
-            SUM(CASE WHEN status = 'complete' THEN 1 ELSE 0 END) as complete,
-            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
-            SUM(CASE WHEN status = 'return' THEN 1 ELSE 0 END) as returned
-        ")->whereBetween('created_at', [now()->subDays(30), now()])
+        $orderStats = $base()
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN status = 'complete' THEN 1 ELSE 0 END), 0) as complete,
+                COALESCE(SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END), 0) as cancelled,
+                COALESCE(SUM(CASE WHEN status = 'return' THEN 1 ELSE 0 END), 0) as returned
+            ")
+            ->where('created_at', '>=', today()->subDays(29))
             ->first();
 
-        // ORDERS PER DAY (7 DAYS)
-        $ordersPerDay = $this->scopeBranch(
-            DB::table('orders')
-        )->selectRaw("DATE(created_at) as date, COUNT(*) as total")
-            ->whereBetween('created_at', [now()->subDays(6), now()])
+        // Jumlah order per hari (7 hari terakhir, hari tanpa order = 0)
+        $rawPerDay = $base()
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+            ->where('created_at', '>=', today()->subDays(6))
             ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+            ->pluck('total', 'date');
 
-        // RECENT ORDERS
-        $recentOrders = $this->scopeBranch(
-            DB::table('orders')
-        )->join('customers', 'customers.id', '=', 'orders.customer_id')
-            ->select(
-                'orders.order_no',
-                'customers.full_name',
-                'orders.total_amount',
-                'orders.status',
-                'orders.created_at'
-            )
-            ->latest('orders.created_at')
+        $ordersPerDay = collect(range(6, 0))->map(function ($daysAgo) use ($rawPerDay) {
+            $date = today()->subDays($daysAgo)->toDateString();
+
+            return ['date' => $date, 'total' => (int) ($rawPerDay[$date] ?? 0)];
+        })->values();
+
+        $recentOrders = $base()
+            ->with(['customer:id,full_name', 'branch:id,name'])
+            ->latest('created_at')
             ->limit(10)
             ->get();
 
-        return view('dashboard.dashboard', compact(
-            'ordersToday',
-            'ordersYesterday',
-            'revenueToday',
-            'activeCustomers',
-            'orderStats',
-            'ordersPerDay',
-            'recentOrders'
-        ));
+        return view('dashboard.dashboard', [
+            'ordersToday' => $ordersToday,
+            'ordersYesterday' => $ordersYesterday,
+            'revenueToday' => $revenueToday,
+            'activeCustomers' => $activeCustomers,
+            'orderStats' => $orderStats,
+            'ordersPerDay' => $ordersPerDay,
+            'recentOrders' => $recentOrders,
+            'showBranch' => $user->hasAllBranchScope(),
+        ]);
     }
 }

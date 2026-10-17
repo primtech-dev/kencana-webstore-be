@@ -70,7 +70,7 @@ function isValidPhone(value) {
 $(function () {
     // Init Choices for manager select (single)
     try {
-        const managerSelect = document.querySelector('select[name="manager_admin_user_id"]');
+        const managerSelect = document.querySelector('select[name="manager_user_id"]');
         if (managerSelect) {
             initChoices(managerSelect, {
                 searchEnabled: true,

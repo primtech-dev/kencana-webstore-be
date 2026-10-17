@@ -12,24 +12,18 @@
                     <input type="hidden" name="order_id" id="changeStatusOrderId" value="">
                     <div class="mb-3">
                         <label for="status" class="form-label">Status baru</label>
-                        <select name="status" id="status" class="form-select" required>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="processing">Processing</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="complete">Complete</option>
-                            <option value="cancelled">Cancelled</option>
-                            <option value="return">Return</option>
-                        </select>
+                        <select name="status" id="status" class="form-select" required></select>
+                        <div class="form-text" id="changeStatusHint"></div>
                     </div>
 
                     <div class="mb-3">
                         <label for="status_notes" class="form-label">Catatan (opsional)</label>
-                        <textarea name="notes" id="status_notes" class="form-control" rows="3"></textarea>
+                        <textarea name="notes" id="status_notes" class="form-control" rows="3" maxlength="1000"></textarea>
                     </div>
 
-                    <div class="alert alert-warning small">
-                        Perhatian: Mengubah status ke <strong>cancelled</strong> atau <strong>shipped</strong> akan memicu proses inventory (unreserve / confirm shipment) jika layanan inventori diaktifkan.
+                    <div class="alert alert-warning small mb-0">
+                        Perhatian: status <strong>Dibatalkan</strong> melepas reservasi stok, <strong>Dikirim</strong> mengurangi stok fisik cabang,
+                        dan <strong>Retur</strong> mengembalikan stok. Aksi ini tidak dapat dilakukan dua kali.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -40,3 +34,6 @@
         </form>
     </div>
 </div>
+<script>
+    window.orderStatusLabels = @json(\App\Enums\OrderStatus::labels());
+</script>

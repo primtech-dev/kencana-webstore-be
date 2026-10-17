@@ -39,7 +39,7 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Kode Cabang <span class="text-danger">*</span></label>
-                            <input type="text" name="code" class="form-control @error('code') is-invalid @enderror"
+                            <input type="text" name="code" id="code" class="form-control @error('code') is-invalid @enderror"
                                    value="{{ old('code', $branch->code ?? '') }}" required>
                             @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             <small class="text-muted">Contoh: KNC-JKT1</small>
@@ -47,7 +47,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Nama Cabang <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
+                            <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
                                    value="{{ old('name', $branch->name ?? '') }}" required>
                             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -61,14 +61,14 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Kota</label>
-                                <input type="text" name="city" class="form-control @error('city') is-invalid @enderror"
+                                <input type="text" name="city" id="city" class="form-control @error('city') is-invalid @enderror"
                                        value="{{ old('city', $branch->city ?? '') }}">
                                 @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Provinsi</label>
-                                <input type="text" name="province" class="form-control @error('province') is-invalid @enderror"
+                                <input type="text" name="province" id="province" class="form-control @error('province') is-invalid @enderror"
                                        value="{{ old('province', $branch->province ?? '') }}">
                                 @error('province')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
@@ -76,7 +76,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Telepon</label>
-                            <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
+                            <input type="text" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror"
                                    value="{{ old('phone', $branch->phone ?? '') }}">
                             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -84,14 +84,14 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Latitude</label>
-                                <input type="text" name="latitude" class="form-control @error('latitude') is-invalid @enderror"
+                                <input type="text" name="latitude" id="latitude" class="form-control @error('latitude') is-invalid @enderror"
                                        value="{{ old('latitude', $branch->latitude ?? '') }}">
                                 @error('latitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Longitude</label>
-                                <input type="text" name="longitude" class="form-control @error('longitude') is-invalid @enderror"
+                                <input type="text" name="longitude" id="longitude" class="form-control @error('longitude') is-invalid @enderror"
                                        value="{{ old('longitude', $branch->longitude ?? '') }}">
                                 @error('longitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
@@ -108,15 +108,15 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Pilih Manager (Opsional)</label>
-                            <select name="manager_admin_user_id" class="form-select @error('manager_admin_user_id') is-invalid @enderror">
+                            <select name="manager_user_id" class="form-select @error('manager_user_id') is-invalid @enderror">
                                 <option value="">— Tidak ada —</option>
                                 @foreach($admins ?? [] as $admin)
-                                    <option value="{{ $admin->id }}" {{ old('manager_admin_user_id') == $admin->id ? 'selected' : '' }}>
+                                    <option value="{{ $admin->id }}" {{ old('manager_user_id') == $admin->id ? 'selected' : '' }}>
                                         {{ $admin->name }} ({{ $admin->email }})
                                     </option>
                                 @endforeach
                             </select>
-                            @error('manager_admin_user_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @error('manager_user_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="mb-3 form-check">

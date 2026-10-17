@@ -19,11 +19,13 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Daftar Cabang</h5>
+                    @if(auth()->user()->hasAllBranchScope())
                     @can('branches.create')
                         <a href="{{ route('branches.create') }}" class="btn btn-primary">
                             <i data-lucide="plus" class="me-1"></i> Tambah Cabang
                         </a>
                     @endcan
+                    @endif
                 </div>
                 <div class="card-body">
                     <table class="table table-striped dt-responsive align-middle w-100" id="branches-table">
@@ -33,7 +35,9 @@
                             <th width="15%">Kode</th>
                             <th>Nama</th>
                             <th width="15%">Kota</th>
-                            <th width="15%">Telepon</th>
+                            <th width="12%">Telepon</th>
+                            <th width="6%" class="text-center">User</th>
+                            <th width="6%" class="text-center">Order</th>
                             <th width="10%">Status</th>
                             <th width="10%">Created At</th>
                             <th width="12%" class="text-center">Aksi</th>

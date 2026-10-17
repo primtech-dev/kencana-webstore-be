@@ -9,6 +9,7 @@ use App\Http\Controllers\Settings\PermissionController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockReceiptController;
+use App\Http\Controllers\StockImportController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\OrderController;
@@ -95,7 +96,7 @@ Route::middleware(['auth'])->name('meta_keywords.')->prefix('meta-keywords')->gr
     Route::delete('/{id}', [MetaKeywordController::class, 'destroy'])->name('destroy')->middleware('permission:meta_keywords.delete');
 });
 
-Route::middleware(['auth'])->name('roles.')->prefix('roles')->group(function () {
+Route::middleware(['auth', 'can:manage-access'])->name('roles.')->prefix('roles')->group(function () {
     Route::get('/', [RoleController::class, 'index'])->name('index')->middleware('permission:roles.view');
     Route::get('/create', [RoleController::class, 'create'])->name('create')->middleware('permission:roles.create');
     Route::post('/', [RoleController::class, 'store'])->name('store')->middleware('permission:roles.create');
@@ -105,7 +106,7 @@ Route::middleware(['auth'])->name('roles.')->prefix('roles')->group(function () 
     Route::get('/{id}', [RoleController::class, 'show'])->name('show')->middleware('permission:roles.view');
 });
 
-Route::middleware(['auth'])->name('permissions.')->prefix('permissions')->group(function () {
+Route::middleware(['auth', 'can:manage-access'])->name('permissions.')->prefix('permissions')->group(function () {
     Route::get('/', [PermissionController::class, 'index'])->name('index')->middleware('permission:permissions.view');
     Route::get('/create', [PermissionController::class, 'create'])->name('create')->middleware('permission:permissions.create');
     Route::post('/', [PermissionController::class, 'store'])->name('store')->middleware('permission:permissions.create');
@@ -164,6 +165,14 @@ Route::middleware(['auth'])->name('products.')->prefix('products')->group(functi
     Route::delete('/images/{id}', [ProductController::class, 'deleteImage'])->name('products.images.destroy'); // if not present
 });
 
+Route::middleware(['auth', 'permission:stock_imports.create'])->name('stock_imports.')->prefix('stock-imports')->group(function () {
+    Route::get('/', [StockImportController::class, 'form'])->name('form');
+    Route::get('/template', [StockImportController::class, 'downloadTemplate'])->name('template');
+    Route::get('/export', [StockImportController::class, 'exportCurrent'])->name('export');
+    Route::post('/preview', [StockImportController::class, 'preview'])->name('preview');
+    Route::post('/confirm', [StockImportController::class, 'process'])->name('process');
+});
+
 Route::middleware(['auth'])->name('stock_receipts.')->prefix('stock-receipts')->group(function () {
     // Ajax helper to lookup variants
     Route::get('/variant-search', [StockReceiptController::class, 'variantSearch'])->name('variant.search')->middleware('permission:stock_receipts.create');
@@ -200,14 +209,14 @@ Route::middleware(['auth'])->group(function () {
         // Orders management (backoffice)
         Route::middleware('can:orders.view')->group(function () {
             Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-            Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
-            Route::get('orders/{id}/print', [OrderController::class, 'print'])
+            Route::get('orders/{id}', [OrderController::class, 'show'])->whereNumber('id')->name('orders.show');
+            Route::get('orders/{id}/print', [OrderController::class, 'print'])->whereNumber('id')
                 ->name('orders.print');
         });
 
         Route::middleware('can:orders.manage')->group(function () {
-            Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-            Route::delete('orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
+            Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->whereNumber('id')->name('orders.updateStatus');
+            Route::delete('orders/{id}', [OrderController::class, 'destroy'])->whereNumber('id')->name('orders.destroy');
         });
     });
 });

@@ -27,7 +27,7 @@ class Unit extends Model
     // Produk yang menggunakan unit ini (base unit)
     public function products()
     {
-        return $this->hasMany(Product::class, 'base_unit_id');
+        return $this->hasMany(Product::class, 'unit_id');
     }
 
     // Varian produk yang menggunakan unit ini

@@ -38,7 +38,6 @@ class App {
         this.initPassword();
         this.initDismissible();
         this.initSidenav();
-        this.initTitleTextAnimation();
     }
 
     // Bootstrap Components
@@ -61,7 +60,7 @@ class App {
 
         // Offcanvas
         document.querySelectorAll(".offcanvas").forEach((el) => {
-            new bootstrap.Offcanvas(el);
+            bootstrap.Offcanvas.getOrCreateInstance(el);
         });
 
         // Toasts
@@ -461,40 +460,6 @@ class App {
             return (-c / 2) * (t * (t - 2) - 1) + b;
         }
     }
-
-    // Title Text Animation
-    initTitleTextAnimation() {
-        const originalTitle = document.title;
-        const fullTitle = originalTitle + " — Kencana Store — ";
-        let scrollIndex = 0;
-        let animationId;
-
-        function scrollTitle() {
-            if (!document.hidden) {
-                document.title =
-                    fullTitle.slice(scrollIndex) +
-                    fullTitle.slice(0, scrollIndex);
-                scrollIndex = (scrollIndex + 1) % fullTitle.length;
-                animationId = setTimeout(scrollTitle, 100);
-            }
-        }
-
-        function handleVisibilityChange() {
-            if (document.hidden) {
-                clearTimeout(animationId);
-                document.title = originalTitle; // Restore full title
-            } else {
-                scrollTitle(); // Restart animation
-            }
-        }
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        // Start animation if tab is visible
-        if (!document.hidden) {
-            scrollTitle();
-        }
-    }
 }
 
 // Layout Customizer
@@ -511,7 +476,6 @@ class LayoutCustomizer {
         this.initWindowSize();
         this._adjustLayout();
         this.setSwitchFromConfig();
-        this.openCustomizer(); // demo only
     }
 
     initConfig() {
@@ -520,27 +484,27 @@ class LayoutCustomizer {
         this.setSwitchFromConfig();
     }
 
-    // demo only
-    isFirstVisit() {
-        const visited = localStorage.getItem("__user_has_visited__");
-        if (!visited) {
-            localStorage.setItem("__user_has_visited__", "true");
-            return true;
+    // Sidebar desktop: sembunyikan / tampilkan (disimpan di localStorage)
+    isSidenavHidden() {
+        try {
+            return localStorage.getItem("__sidenav_hidden__") === "1";
+        } catch (e) {
+            return false;
         }
-        return false;
     }
 
-    // demo only
-    openCustomizer() {
-        const layoutCustomizer = document.getElementById(
-            "theme-settings-offcanvas"
-        );
-        if (layoutCustomizer && this.isFirstVisit()) {
-            const offcanvas = new bootstrap.Offcanvas(layoutCustomizer);
-            setTimeout(() => {
-                offcanvas.show();
-            }, 1000);
+    setSidenavHidden(hidden) {
+        try {
+            if (hidden) {
+                localStorage.setItem("__sidenav_hidden__", "1");
+            } else {
+                localStorage.removeItem("__sidenav_hidden__");
+            }
+        } catch (e) {
+            /* storage tidak tersedia: tetap berlaku untuk sesi ini */
         }
+        this.html.classList.remove("sidebar-enable");
+        this._adjustLayout();
     }
 
     monochromeMode() {
@@ -611,6 +575,7 @@ class LayoutCustomizer {
 
     resetTheme() {
         this.config = JSON.parse(JSON.stringify(window.defaultConfig));
+        this.setSidenavHidden(false);
         this.changeSkin(this.config.skin);
         this.changeSidenavColor(this.config.sidenav.color);
         this.changeSidenavSize(this.config.sidenav.size);
@@ -676,7 +641,10 @@ class LayoutCustomizer {
             this.changeSidenavColor(input.value)
         );
         bindChange('input[name="data-sidenav-size"]', (input) =>
-            this.changeSidenavSize(input.value)
+            {
+                this.setSidenavHidden(false);
+                this.changeSidenavSize(input.value);
+            }
         );
         bindChange('input[name="data-bs-theme"]', (input) =>
             this.changeTheme(input.value)
@@ -713,20 +681,14 @@ class LayoutCustomizer {
             });
         }
 
+        // Desktop (>= xl): sembunyikan / tampilkan sidebar. Mobile/tablet ditangani script di topbar.
         document.querySelectorAll(".button-collapse-toggle").forEach((el) => {
-            el.addEventListener("click", () => {
-                const current = this.html.getAttribute("data-sidenav-size");
-
-                if (current === "offcanvas") {
-                    // this.showBackdrop();
-                    this.html.classList.toggle("sidebar-enable");
-                    return;
-                }
-
-                this.changeSidenavSize(
-                    { default: "collapse", collapse: "default" }[current],
-                    true
-                );
+            el.addEventListener("click", (event) => {
+                if (window.innerWidth < 1200) return;
+                // satu klik = satu toggle, walau handler terpasang lebih dari sekali
+                if (event.__sidenavToggled) return;
+                event.__sidenavToggled = true;
+                this.setSidenavHidden(!this.isSidenavHidden());
             });
         });
     }
@@ -777,10 +739,10 @@ class LayoutCustomizer {
         const width = window.innerWidth;
         const size = this.config.sidenav.size;
 
-        if (width <= 1199) {
+        if (width <= 1199 || this.isSidenavHidden()) {
             this.changeSidenavSize("offcanvas", false);
         } else {
-            this.changeSidenavSize(size);
+            this.changeSidenavSize(size, false);
         }
     }
 
@@ -1029,6 +991,11 @@ class I18nManager {
 }
 
 document.addEventListener("DOMContentLoaded", function (e) {
+    // Cegah inisialisasi ganda bila modul ini termuat lebih dari sekali
+    // (mis. dev server Vite menambahkan ?t=... pada import dari halaman lain).
+    if (window.__appInitialized) return;
+    window.__appInitialized = true;
+
     new App().init();
     new LayoutCustomizer().init();
     new Plugins().init();
@@ -1245,11 +1212,4 @@ const menuObserver = new MutationObserver(() => {
 menuObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["data-sidenav-size"],
-});
-
-document.addEventListener("DOMContentLoaded", function (e) {
-    new App().init();
-    new LayoutCustomizer().init();
-    new Plugins().init();
-    new I18nManager().init();
 });

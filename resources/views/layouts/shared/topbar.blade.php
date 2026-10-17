@@ -22,8 +22,8 @@
                 </a>
             </div>
 
-            <!-- Sidebar Hover Menu Toggle Button -->
-            <button class="button-collapse-toggle d-xl-none">
+            <!-- Sidebar Toggle Button (mobile: buka/tutup overlay, desktop: sembunyikan/tampilkan) -->
+            <button type="button" class="button-collapse-toggle" title="Sembunyikan / tampilkan menu" aria-label="Sembunyikan / tampilkan menu">
                 <i data-lucide="menu" class="fs-22 align-middle"></i>
             </button>
         </div> <!-- .d-flex-->
@@ -328,6 +328,8 @@
         // Toggle button click
         if (toggleButton) {
             toggleButton.addEventListener('click', function(e) {
+                // Desktop (>= xl) ditangani LayoutCustomizer (sembunyikan/tampilkan sidebar)
+                if (window.innerWidth >= 1200) return;
                 e.stopPropagation();
 
                 if (htmlElement.classList.contains('sidebar-enable')) {

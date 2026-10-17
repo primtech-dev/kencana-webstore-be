@@ -12,6 +12,10 @@ class CartItem extends Model
 
     protected $table = 'cart_items';
 
+    protected $casts = [
+        'quantity' => 'decimal:2',
+    ];
+
     protected $dates = [
         'created_at',
         'updated_at',

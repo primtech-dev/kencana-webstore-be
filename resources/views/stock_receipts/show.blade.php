@@ -41,8 +41,8 @@
                     <tr>
                         <td>{{ $idx+1 }}</td>
                         <td>{{ $it->variant->sku ?? '—' }}
-                            — {{ $it->variant->name ?? ($it->variant->product->name ?? '-') }}</td>
-                        <td>{{ $it->quantity_received }}</td>
+                            — {{ $it->variant->variant_name ?? ($it->variant->product->name ?? '-') }}</td>
+                        <td>{{ \App\Support\Qty::fmt($it->quantity_received) }} {{ $it->variant->unit->name ?? '' }}</td>
                     </tr>
                 @endforeach
                 </tbody>

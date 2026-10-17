@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const navbarToggler = document.querySelector('.navbar-toggler');
     const navbarCollapse = document.getElementById('navbarNav');
 
+    // Navbar frontend tidak ada di halaman admin: tidak ada yang perlu diinisialisasi
+    if (!navbar || !navbarToggler || !navbarCollapse) return;
+
     // ============================================
     // Manual Toggle Function
     // ============================================

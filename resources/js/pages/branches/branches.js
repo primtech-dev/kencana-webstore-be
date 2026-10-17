@@ -44,11 +44,13 @@ $(function() {
             { data: 'name', name: 'name' },
             { data: 'city', name: 'city' },
             { data: 'phone', name: 'phone' },
+            { data: 'users_count', name: 'users_count', className: 'text-center', orderable: false, searchable: false },
+            { data: 'orders_count', name: 'orders_count', className: 'text-center', orderable: false, searchable: false },
             { data: 'is_active', name: 'is_active', className: 'text-center', orderable: false, searchable: false },
             { data: 'created_at', name: 'created_at' },
             { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
         ],
-        order: [[6, 'desc']],
+        order: [[8, 'desc']],
         drawCallback: function() {
             // 1) jika pakai lucide, replace icon dulu
             try {

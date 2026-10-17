@@ -217,12 +217,13 @@ $(function () {
                 const qtyVal = $(this).find('.qty-input').val();
 
                 if (!variantVal) ok = false;
-                if (!qtyVal || isNaN(qtyVal) || parseInt(qtyVal) <= 0) ok = false;
+                const qtyNum = parseFloat(qtyVal);
+                if (!qtyVal || isNaN(qtyNum) || qtyNum <= 0 || Math.abs(qtyNum * 100 - Math.round(qtyNum * 100)) > 1e-6) ok = false;
             });
 
             if (!ok) {
                 e.preventDefault();
-                if (window.toast) window.toast.error('Periksa kembali variant dan quantity.');
+                if (window.toast) window.toast.error('Periksa kembali variant dan quantity (maksimal 2 angka di belakang koma).');
                 return false;
             }
 

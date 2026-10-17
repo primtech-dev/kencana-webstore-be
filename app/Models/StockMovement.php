@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,6 +11,7 @@ class StockMovement extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use BelongsToBranch;
 
     public $timestamps = false;
     protected $table = 'stock_movements';
@@ -19,6 +21,9 @@ class StockMovement extends Model
     ];
 
     protected $casts = [
+        'change' => 'decimal:2',
+        'resulting_on_hand' => 'decimal:2',
+
         'metadata' => 'array',
         'created_at' => 'datetime',
     ];
