@@ -658,7 +658,7 @@
     ]
   },
   "resources/js/pages/inventory/movements.js": {
-    "file": "assets/movements-fnYYUSO3.js",
+    "file": "assets/movements-BrUyGSZj.js",
     "name": "movements",
     "src": "resources/js/pages/inventory/movements.js",
     "isEntry": true,
@@ -909,6 +909,19 @@
       "_jquery-BQXThELV.js",
       "_bootstrap-BTbS0qBz.js",
       "_index-BEKk9TLb.js"
+    ]
+  },
+  "resources/js/pages/stock-imports/history.js": {
+    "file": "assets/history-PRVrCctu.js",
+    "name": "history",
+    "src": "resources/js/pages/stock-imports/history.js",
+    "isEntry": true,
+    "imports": [
+      "_jquery-DxCMfk7S.js",
+      "_dataTables.bootstrap5-SLVZVhPx.js",
+      "_responsive.bootstrap5-CO5iH43l.js",
+      "__commonjsHelpers-D6-XlEtG.js",
+      "_jquery-BQXThELV.js"
     ]
   },
   "resources/js/pages/stock-receipts/create.js": {
