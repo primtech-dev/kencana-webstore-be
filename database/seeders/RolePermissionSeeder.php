@@ -16,7 +16,7 @@ class RolePermissionSeeder extends Seeder
 
         $permissions = [
             // Orders
-            'orders.view', 'orders.manage', 'orders.cancel',
+            'orders.view', 'orders.manage', 'orders.cancel', 'orders.ship', 'orders.delete',
             // Inventory
             'inventory.view', 'inventory.adjust', 'inventory.receive',
             // Products
@@ -24,11 +24,9 @@ class RolePermissionSeeder extends Seeder
             // Shipments & returns
             'shipments.manage', 'returns.manage',
             // Customers
-            'customers.view', 'customers.manage',
+            'customers.view',
             // Branches (manajemen cabang)
             'branches.view', 'branches.create', 'branches.update', 'branches.delete',
-            // Settings & admin
-            'roles.manage', 'permissions.manage', 'admin.users.manage',
         ];
 
         foreach ($permissions as $perm) {
@@ -44,7 +42,7 @@ class RolePermissionSeeder extends Seeder
         // Assign permissions
         $super->syncPermissions(Permission::all()); // superadmin dapat semua
         $inv->syncPermissions(['inventory.view','inventory.adjust','inventory.receive','products.view']);
-        $sales->syncPermissions(['orders.view','orders.manage','shipments.manage']);
+        $sales->syncPermissions(['orders.view','orders.manage','orders.cancel','orders.ship','orders.delete','shipments.manage']);
         $manager->syncPermissions(['orders.view','inventory.view','shipments.manage','customers.view']);
 
         // Pastikan cache di-clear lagi setelah perubahan

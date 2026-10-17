@@ -209,14 +209,14 @@ Route::middleware(['auth'])->group(function () {
         // Orders management (backoffice)
         Route::middleware('can:orders.view')->group(function () {
             Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-            Route::get('orders/{id}', [OrderController::class, 'show'])->name('orders.show');
-            Route::get('orders/{id}/print', [OrderController::class, 'print'])
+            Route::get('orders/{id}', [OrderController::class, 'show'])->whereNumber('id')->name('orders.show');
+            Route::get('orders/{id}/print', [OrderController::class, 'print'])->whereNumber('id')
                 ->name('orders.print');
         });
 
         Route::middleware('can:orders.manage')->group(function () {
-            Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-            Route::delete('orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
+            Route::post('orders/{id}/status', [OrderController::class, 'updateStatus'])->whereNumber('id')->name('orders.updateStatus');
+            Route::delete('orders/{id}', [OrderController::class, 'destroy'])->whereNumber('id')->name('orders.destroy');
         });
     });
 });

@@ -22,6 +22,7 @@ class Order extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'placed_at' => 'datetime',
     ];
 
     protected $fillable = [
@@ -31,6 +32,9 @@ class Order extends Model
         'branch_id',
         'status',
         'currency',
+        'address_id',
+        'delivery_method',
+        'placed_at',
         'subtotal_before_discount',
         'discount_total',
         'subtotal_after_discount',
@@ -69,7 +73,7 @@ class Order extends Model
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id'); // pastikan model Customer ada
+        return $this->belongsTo(Customer::class, 'customer_id')->withTrashed();
     }
 
     public function branch()
@@ -84,6 +88,11 @@ class Order extends Model
 
     public function address()
     {
-        return $this->belongsTo(\App\Models\Address::class, 'address_id');
+        return $this->belongsTo(\App\Models\Address::class, 'address_id')->withTrashed();
+    }
+
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'order_id')->latest('created_at')->latest('id');
     }
 }

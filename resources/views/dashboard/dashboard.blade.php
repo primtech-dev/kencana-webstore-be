@@ -121,6 +121,7 @@
                             <tr>
                                 <th>Order No</th>
                                 <th>Customer</th>
+                                @if($showBranch)<th>Cabang</th>@endif
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th>Tanggal</th>
@@ -129,19 +130,20 @@
                             <tbody>
                             @forelse ($recentOrders as $order)
                                 <tr>
-                                    <td>{{ $order->order_no }}</td>
-                                    <td>{{ $order->full_name }}</td>
+                                    <td><a href="{{ route('admin.orders.show', $order->id) }}">{{ $order->order_no }}</a></td>
+                                    <td>{{ $order->customer->full_name ?? '-' }}</td>
+                                    @if($showBranch)<td>{{ $order->branch->name ?? '-' }}</td>@endif
                                     <td>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                                     <td>
-                                        <span class="badge bg-{{ $order->status === 'complete' ? 'success' : 'secondary' }}">
-                                            {{ ucfirst($order->status) }}
+                                        <span class="badge bg-{{ \App\Enums\OrderStatus::badgeFor($order->status) }}">
+                                            {{ \App\Enums\OrderStatus::labelFor($order->status) }}
                                         </span>
                                     </td>
-                                    <td>{{ $order->created_at }}</td>
+                                    <td>{{ $order->created_at?->format('d M Y H:i') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">
+                                    <td colspan="{{ $showBranch ? 6 : 5 }}" class="text-center text-muted">
                                         Belum ada order
                                     </td>
                                 </tr>
