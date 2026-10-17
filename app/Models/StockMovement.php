@@ -21,6 +21,9 @@ class StockMovement extends Model
     ];
 
     protected $casts = [
+        'change' => 'decimal:2',
+        'resulting_on_hand' => 'decimal:2',
+
         'metadata' => 'array',
         'created_at' => 'datetime',
     ];

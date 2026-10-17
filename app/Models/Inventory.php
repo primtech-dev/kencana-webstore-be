@@ -17,6 +17,12 @@ class Inventory extends Model
         'variant_id','branch_id','on_hand','available','reserved'
     ];
 
+    protected $casts = [
+        'on_hand' => 'decimal:2',
+        'available' => 'decimal:2',
+        'reserved' => 'decimal:2',
+    ];
+
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'variant_id');

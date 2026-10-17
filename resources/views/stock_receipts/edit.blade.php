@@ -134,7 +134,7 @@
 
                                             <div class="col-6 col-md-3 col-lg-3">
                                                 <label class="form-label">Qty <span class="text-danger">*</span></label>
-                                                <input type="number" name="items[][quantity_received]" class="form-control qty-input" min="1" value="{{ $it->quantity_received }}" required>
+                                                <input type="number" name="items[][quantity_received]" class="form-control qty-input" min="0.01" step="0.01" value="{{ \App\Support\Qty::input($it->quantity_received) }}" required>
                                             </div>
 
                                             <div class="col-12 col-md-12 col-lg-1 text-end">
